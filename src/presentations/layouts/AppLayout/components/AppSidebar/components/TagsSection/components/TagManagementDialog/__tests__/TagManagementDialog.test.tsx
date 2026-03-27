@@ -288,7 +288,9 @@ describe('TagManagementDialog', () => {
       await user.click(deleteButton);
 
       await waitFor(() => {
-        expect(screen.getByTestId('tagDeleteConfirmDialog')).toBeInTheDocument();
+        expect(
+          screen.getByTestId('tagDeleteConfirmDialog')
+        ).toBeInTheDocument();
       });
 
       expect(screen.getByTestId('deleteTagId')).toHaveTextContent(mockTag.id);
@@ -308,7 +310,9 @@ describe('TagManagementDialog', () => {
       await user.click(deleteButton1);
 
       await waitFor(() => {
-        expect(screen.getByTestId('tagDeleteConfirmDialog')).toBeInTheDocument();
+        expect(
+          screen.getByTestId('tagDeleteConfirmDialog')
+        ).toBeInTheDocument();
       });
 
       expect(screen.getByTestId('deleteTagId')).toHaveTextContent(mockTag2.id);
@@ -333,7 +337,9 @@ describe('TagManagementDialog', () => {
       await user.click(deleteButton2);
 
       await waitFor(() => {
-        expect(screen.getByTestId('tagDeleteConfirmDialog')).toBeInTheDocument();
+        expect(
+          screen.getByTestId('tagDeleteConfirmDialog')
+        ).toBeInTheDocument();
       });
 
       expect(screen.getByTestId('deleteTagId')).toHaveTextContent(mockTag3.id);
@@ -351,7 +357,9 @@ describe('TagManagementDialog', () => {
       await user.click(deleteButton);
 
       await waitFor(() => {
-        expect(screen.getByTestId('tagDeleteConfirmDialog')).toBeInTheDocument();
+        expect(
+          screen.getByTestId('tagDeleteConfirmDialog')
+        ).toBeInTheDocument();
       });
 
       // ダイアログを閉じる
@@ -424,7 +432,9 @@ describe('TagManagementDialog', () => {
       await user.click(deleteButton);
 
       await waitFor(() => {
-        expect(screen.getByTestId('tagDeleteConfirmDialog')).toBeInTheDocument();
+        expect(
+          screen.getByTestId('tagDeleteConfirmDialog')
+        ).toBeInTheDocument();
       });
     });
 

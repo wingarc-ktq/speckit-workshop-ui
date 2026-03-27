@@ -233,7 +233,9 @@ describe('UploadSection', () => {
       // 3秒後にファイルリストが消えることを確認（実時間で待つ）
       await waitFor(
         () => {
-          expect(screen.queryByTestId('fileUploadList')).not.toBeInTheDocument();
+          expect(
+            screen.queryByTestId('fileUploadList')
+          ).not.toBeInTheDocument();
         },
         { timeout: 4000 }
       );
@@ -459,7 +461,10 @@ describe('UploadSection', () => {
   describe('アップロード中の状態管理', () => {
     test('アップロード中はFileUploadZoneが無効化されること', async () => {
       uploadFile.mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve({ id: '1' }), 10000))
+        () =>
+          new Promise((resolve) =>
+            setTimeout(() => resolve({ id: '1' }), 10000)
+          )
       );
       renderComponent();
 
