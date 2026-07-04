@@ -84,3 +84,9 @@ public/mockServiceWorker.js
 
 # Auto-generated Copilot instructions
 .github/copilot-instructions.md
+
+# Spec Kit integration catalog cache
+.specify/integrations/.cache/
+
+# Claude Code worktrees
+.claude/worktrees/
