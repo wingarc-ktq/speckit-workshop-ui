@@ -119,7 +119,8 @@ describe('LoginForm', () => {
 
     await clickLoginButton();
 
-    expect(loginUser).toHaveBeenCalledWith({
+    expect(loginUser).toHaveBeenCalledTimes(1);
+    expect(loginUser.mock.calls[0][0]).toEqual({
       userId: 'test@example.com',
       password: 'password123',
       rememberMe: true,

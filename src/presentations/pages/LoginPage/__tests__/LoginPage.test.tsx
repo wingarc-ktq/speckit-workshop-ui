@@ -56,7 +56,8 @@ describe('LoginPage', () => {
 
     await clickLoginButton();
 
-    expect(mockLoginUser).toHaveBeenCalledWith({
+    expect(mockLoginUser).toHaveBeenCalledTimes(1);
+    expect(mockLoginUser.mock.calls[0][0]).toEqual({
       userId: 'testuser@example.com',
       password: 'password123',
       rememberMe: false,

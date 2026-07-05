@@ -25,7 +25,7 @@ export default defineConfig({
     },
     mockReset: true,
     css: true,
-    exclude: ['**/node_modules/**', '**/playwright/**'],
+    exclude: ['**/node_modules/**', '**/playwright/**', '**/.claude/**'],
     coverage: {
       reporter: ['text', 'json', 'html'],
       include: ['src/**'],
