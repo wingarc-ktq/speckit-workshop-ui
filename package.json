@@ -114,5 +114,10 @@
     "workerDirectory": [
       "public"
     ]
+  },
+  "pnpm": {
+    "overrides": {
+      "form-data@>=4.0.0 <4.0.6": ">=4.0.6"
+    }
   }
 }
