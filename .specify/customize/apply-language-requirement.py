@@ -10,6 +10,7 @@ speckit の `specify integration install/upgrade` を実行するとエージェ
   - claude  : .claude/skills/speckit-*/SKILL.md
   - cline   : .clinerules/workflows/speckit-*.md
   - copilot : .github/skills/speckit-*/SKILL.md
+  - agy     : .agents/skills/speckit-*/SKILL.md
   - gemini  : .gemini/commands/speckit.*.toml
 """
 from __future__ import annotations
@@ -27,6 +28,7 @@ MARKDOWN_GLOBS = [
     ".claude/skills/speckit-*/SKILL.md",
     ".clinerules/workflows/speckit-*.md",
     ".github/skills/speckit-*/SKILL.md",
+    ".agents/skills/speckit-*/SKILL.md",
 ]
 # frontmatter を持たない gemini の TOML
 TOML_GLOBS = [

@@ -1,7 +1,13 @@
 {
   "version": "0.12.4",
   "integration_state_schema": 1,
-  "installed_integrations": ["claude", "cline", "gemini", "copilot"],
+  "installed_integrations": [
+    "claude",
+    "cline",
+    "gemini",
+    "copilot",
+    "agy"
+  ],
   "integration_settings": {
     "claude": {
       "script": "sh",
@@ -21,6 +27,10 @@
       "parsed_options": {
         "skills": true
       },
+      "invoke_separator": "-"
+    },
+    "agy": {
+      "script": "sh",
       "invoke_separator": "-"
     }
   },
