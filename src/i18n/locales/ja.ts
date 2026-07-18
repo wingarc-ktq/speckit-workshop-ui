@@ -52,6 +52,12 @@ export const ja = {
       gatewayTimeout: 'サーバーが時間内に応答しませんでした。',
     },
   },
+  components: {
+    loadError: {
+      message: '読み込みに失敗しました',
+      reload: '再読み込み',
+    },
+  },
   homePage: {
     title: 'ダッシュボード',
     welcome: 'Dashboardへようこそ。こちらがメインのダッシュボードページです。',

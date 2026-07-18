@@ -49,6 +49,12 @@ export const en = {
       gatewayTimeout: 'The server did not respond in time.',
     },
   },
+  components: {
+    loadError: {
+      message: 'Failed to load.',
+      reload: 'Reload',
+    },
+  },
   homePage: {
     title: 'Dashboard',
     welcome: 'Welcome to Admin Dashboard. This is the main dashboard page.',
