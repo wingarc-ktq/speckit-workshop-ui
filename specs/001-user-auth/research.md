@@ -31,9 +31,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 const loginSchema = z.object({
-  userId: z.string().min(1, 'ユーザーIDを入力してください'),
+  email: z
+    .string()
+    .min(1, 'メールアドレスを入力してください')
+    .email('メールアドレスの形式が正しくありません'),
   password: z.string().min(8, 'パスワードは8文字以上必要です'),
-  rememberMe: z.boolean().default(false),
+  // rememberMe はトークンの保存先を切り替えるためのフラグ
+  // （true=localStorage / false=sessionStorage）
+  rememberMe: z.boolean().optional(),
 });
 
 export type LoginFormData = z.infer<typeof loginSchema>;
@@ -42,7 +47,7 @@ export function useLoginForm() {
   return useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      userId: '',
+      email: '',
       password: '',
       rememberMe: false,
     },
@@ -52,25 +57,61 @@ export function useLoginForm() {
 
 ---
 
-### 2. セッション状態管理
+### 2. 認証方式と認証状態管理
 
-**Decision**: TanStack Query (React Query) を使用
+**Decision**: JWT（Bearer トークン）認証を採用し、認証状態は TanStack Query (React Query) で管理
 
 **Rationale**:
 
-- サーバー状態とキャッシュ管理に特化
-- 自動再取得、楽観的更新、エラーハンドリング
-- 既にプロジェクトで使用中
-- ログイン状態の永続化とリフレッシュが容易
+- バックエンドの OpenAPI が JWT（bearerAuth）認証に変更され、API がトークン方式を規定
+  - サーバー側のセッション状態を持たない（ステートレス）。ブラウザの自動送信に依存しないため
+    クロスサイトリクエストフォージェリ対策も不要
+- ログインで受け取った JWT アクセストークンをクライアント側に保存し、以降のリクエストは
+  `Authorization: Bearer <token>` ヘッダーで送信する
+- 認証状態の確認は `GET /auth/me` にトークンを付与して行い、成功すればログイン中と判定する
+- サーバー状態とキャッシュ管理は TanStack Query に集約（自動再取得、エラーハンドリング）
+- ログアウトはサーバー API を持たず、クライアント側でトークンを破棄する（ステートレス）
+
+**トークン保存方針**:
+
+- `rememberMe: true` → `localStorage`（リロード後も保持）
+- `rememberMe: false` → `sessionStorage`（タブを閉じるまで保持）
+- 保存先の切り替え・付与は `src/adapters/authToken.ts` と `src/adapters/axios.ts`（request interceptor）で実装
 
 **Alternatives Considered**:
 
+- サーバーセッション方式: API が JWT（Bearer）に変更されたため採用不可
 - Context API単体: キャッシュとリフレッシュロジックを自前実装する必要
 - Zustand: グローバル状態管理だが、サーバー状態には不向き
 
 **Implementation Pattern**:
 
 ```typescript
+// authToken.ts — JWT アクセストークンのクライアント側ストア
+const TOKEN_KEY = 'accessToken';
+
+export function setAccessToken(token: string, remember: boolean): void {
+  clearAccessToken();
+  const storage = remember ? localStorage : sessionStorage;
+  storage.setItem(TOKEN_KEY, token);
+}
+
+export function getAccessToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY) ?? sessionStorage.getItem(TOKEN_KEY);
+}
+
+export function clearAccessToken(): void {
+  localStorage.removeItem(TOKEN_KEY);
+  sessionStorage.removeItem(TOKEN_KEY);
+}
+
+// axios.ts — 保存済みトークンを Authorization ヘッダーに付与
+axiosClient.interceptors.request.use((config) => {
+  const token = getAccessToken();
+  if (token) config.headers.set('Authorization', `Bearer ${token}`);
+  return config;
+});
+
 // useAuth.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -79,15 +120,15 @@ const AUTH_QUERY_KEY = ['auth', 'session'] as const;
 export function useAuth() {
   const queryClient = useQueryClient();
 
-  // セッション確認
+  // 認証状態確認: GET /auth/me（Authorization: Bearer <token>）
   const { data: session, isLoading } = useQuery({
     queryKey: AUTH_QUERY_KEY,
-    queryFn: () => authRepository.getSession(),
+    queryFn: () => authRepository.getCurrentSession(),
     retry: false,
     staleTime: 5 * 60 * 1000, // 5分
   });
 
-  // ログイン
+  // ログイン（成功時にトークンを保存し、認証状態を更新）
   const loginMutation = useMutation({
     mutationFn: (credentials: LoginFormData) =>
       authRepository.login(credentials),
@@ -96,7 +137,7 @@ export function useAuth() {
     },
   });
 
-  // ログアウト
+  // ログアウト（クライアント側でトークンを破棄）
   const logoutMutation = useMutation({
     mutationFn: () => authRepository.logout(),
     onSuccess: () => {
@@ -175,7 +216,8 @@ import { WebApiException } from '@/domain/errors';
 
 export class AuthException extends WebApiException {
   constructor(
-    public readonly code: 'INVALID_CREDENTIALS' | 'SESSION_EXPIRED' | 'NO_SESSION',
+    // JWT: トークンが無効/失効した場合の認証失敗を表す
+    public readonly code: 'INVALID_CREDENTIALS' | 'TOKEN_EXPIRED' | 'UNAUTHORIZED',
     message: string,
     statusCode: number
   ) {
@@ -184,21 +226,21 @@ export class AuthException extends WebApiException {
   }
 }
 
-// AuthRepositoryImpl.ts
-async login(credentials: LoginFormData): Promise<LoginResponse> {
+// loginUser.ts — 成功時に JWT を保存し、失敗時はドメイン例外へ変換
+// エラーレスポンスは { message, code } 形式
+async function login(credentials: LoginFormData): Promise<LoginResult> {
   try {
-    const response = await authApi.loginUser({
-      body: credentials
+    const { accessToken, expiresIn, user } = await loginUser({
+      email: credentials.email,
+      password: credentials.password,
     });
-    return response.data;
+    // rememberMe に応じて localStorage / sessionStorage に保存
+    setAccessToken(accessToken, credentials.rememberMe ?? false);
+    return { session: { user, sessionInfo: { expiresAt: new Date(Date.now() + expiresIn * 1000) } } };
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
-      const { error: errorCode, message } = error.response.data;
-      throw new AuthException(
-        errorCode,
-        message,
-        error.response.status
-      );
+      const { message, code } = error.response.data;
+      throw new AuthException(code, message, error.response.status);
     }
     throw new NetworkException('ネットワークエラーが発生しました');
   }
@@ -227,7 +269,7 @@ async login(credentials: LoginFormData): Promise<LoginResponse> {
     ├── <Typography> (h3) - "Login"
     ├── <Typography> (body1) - "Please sign in..."
     ├── *Custom / Forms / Email & Password (Form)
-    │   ├── <TextField> - "Email Address or Username"
+    │   ├── <TextField> - "Email Address"
     │   ├── Spacing
     │   ├── <TextField> - "Password" (with eye icon)
     │   ├── Spacing
@@ -268,97 +310,67 @@ async login(credentials: LoginFormData): Promise<LoginResponse> {
 **Implementation Pattern**:
 
 ```typescript
-// authHandlers.ts
+// auth.ts（JWT 認証APIのモックハンドラー）
 import { http, HttpResponse, delay } from 'msw';
 
-const BASE_URL = 'http://localhost:3000/api';
+export const getCustomAuthAPIMock = () => [
+  // POST /auth/login — JSON ボディを検証し、成功時に JWT を返す
+  http.post('*/auth/login', async ({ request }) => {
+    await delay(1000);
 
-export const authHandlers = [
-  // 成功ケース
-  http.post(`${BASE_URL}/auth/login`, async ({ request }) => {
-    const body = await request.json();
+    const body = (await request.json()) as { email?: string; password?: string };
 
-    // 遅延シミュレーション
-    await delay(500);
-
-    // テストユーザー
-    if (body.userId === 'test@example.com' && body.password === 'password123') {
+    // 認証失敗ケース（{ message, code } 形式で 401）
+    if (body.password === 'wrong_password') {
       return HttpResponse.json(
         {
-          message: 'ログインに成功しました',
-          data: {
-            user: {
-              id: 'user-123',
-              username: 'testuser',
-              email: 'test@example.com',
-              fullName: 'Test User',
-            },
-            sessionInfo: {
-              expiresAt: new Date(Date.now() + 86400000).toISOString(),
-              csrfToken: 'csrf-token-123',
-            },
-          },
+          message: 'メールアドレスまたはパスワードが正しくありません',
+          code: 'AUTH_FAILED',
         },
-        {
-          headers: {
-            'Set-Cookie': 'session_id=mock-session; Path=/; HttpOnly',
-          },
-        }
+        { status: 401 }
       );
     }
 
-    // 認証失敗ケース
-    return HttpResponse.json(
-      {
-        error: 'INVALID_CREDENTIALS',
-        message: 'メールアドレス/ユーザー名またはパスワードが正しくありません',
-        timestamp: new Date().toISOString(),
+    // 成功ケース: accessToken / tokenType(Bearer) / expiresIn / user を返す
+    return HttpResponse.json({
+      accessToken: 'mock.jwt.token',
+      tokenType: 'Bearer',
+      expiresIn: 3600,
+      user: {
+        id: '550e8400-e29b-41d4-a716-446655440000',
+        email: 'test@example.com',
+        name: 'Test User',
+        createdAt: '2025-01-01T00:00:00Z',
+        updatedAt: '2025-01-01T00:00:00Z',
       },
-      { status: 400 }
-    );
+    });
   }),
 
-  // ログアウト
-  http.post(`${BASE_URL}/auth/logout`, async () => {
-    await delay(300);
-    return HttpResponse.json(
-      {
-        message: 'ログアウトしました',
-      },
-      {
-        headers: {
-          'Set-Cookie': 'session_id=; Path=/; HttpOnly; Max-Age=0',
-        },
-      }
-    );
-  }),
+  // GET /auth/me — Authorization: Bearer が無ければ 401
+  http.get('*/auth/me', async ({ request }) => {
+    await delay(1000);
 
-  // セッション確認
-  http.get(`${BASE_URL}/auth/session`, ({ cookies }) => {
-    if (cookies.session_id) {
-      return HttpResponse.json({
-        user: {
-          id: 'user-123',
-          username: 'testuser',
-          email: 'test@example.com',
-          fullName: 'Test User',
-        },
-        sessionInfo: {
-          expiresAt: new Date(Date.now() + 86400000).toISOString(),
-          csrfToken: 'csrf-token-123',
-        },
-      });
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return HttpResponse.json(
+        { message: '未認証です', code: 'UNAUTHORIZED' },
+        { status: 401 }
+      );
     }
 
-    return HttpResponse.json(
-      {
-        error: 'NO_SESSION',
-        message: 'ログインが必要です',
-        timestamp: new Date().toISOString(),
+    return HttpResponse.json({
+      user: {
+        id: '550e8400-e29b-41d4-a716-446655440000',
+        email: 'test@example.com',
+        name: 'Test User',
+        createdAt: '2025-01-01T00:00:00Z',
+        updatedAt: '2025-01-01T00:00:00Z',
       },
-      { status: 401 }
-    );
+    });
   }),
+
+  // ログアウトはサーバー API を持たない（JWT はステートレス）。
+  // クライアント側でトークンを破棄するため、モックハンドラーは不要。
 ];
 ```
 
@@ -382,16 +394,17 @@ export const authHandlers = [
   "login": {
     "title": "ログイン",
     "subtitle": "アカウントにサインインしてください",
-    "emailLabel": "メールアドレスまたはユーザー名",
+    "emailLabel": "メールアドレス",
     "passwordLabel": "パスワード",
     "rememberMe": "ログイン状態を保持",
     "loginButton": "ログイン",
     "forgotPassword": "パスワードをお忘れですか？",
     "errors": {
       "required": "{field}を入力してください",
-      "invalidCredentials": "メールアドレス/ユーザー名またはパスワードが正しくありません",
+      "invalidEmail": "メールアドレスの形式が正しくありません",
+      "invalidCredentials": "メールアドレスまたはパスワードが正しくありません",
       "networkError": "ネットワークエラーが発生しました。再度お試しください",
-      "sessionExpired": "セッションの有効期限が切れました。再度ログインしてください"
+      "unauthorized": "認証の有効期限が切れました。再度ログインしてください"
     }
   }
 }
