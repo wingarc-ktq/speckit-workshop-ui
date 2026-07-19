@@ -11,6 +11,15 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  server: {
+    // 単一オリジン（/api/v1）を各バックエンドサービスへ振り分ける（開発用ゲートウェイ）
+    // 本番は nginx / API Gateway 側で同等のルーティングを行う
+    proxy: {
+      '/api/v1/auth': { target: 'http://localhost:8081', changeOrigin: true },
+      '/api/v1/files': { target: 'http://localhost:8082', changeOrigin: true },
+      '/api/v1/tags': { target: 'http://localhost:8082', changeOrigin: true },
+    },
+  },
   test: {
     environment: 'jsdom',
     globals: true,

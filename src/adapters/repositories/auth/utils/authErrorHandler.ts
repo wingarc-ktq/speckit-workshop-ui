@@ -53,14 +53,3 @@ export function handleSessionError(error: unknown): never {
     throw AuthException.noSession(data);
   });
 }
-
-/**
- * ログアウトエラーを適切なAuthExceptionに変換する
- * @param error キャッチされたエラー
- * @throws {AuthException} 変換されたAuthException
- */
-export function handleLogoutError(error: unknown): never {
-  convertToAuthException(error, (data) => {
-    throw AuthException.noSession(data);
-  });
-}

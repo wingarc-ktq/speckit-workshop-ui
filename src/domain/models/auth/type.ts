@@ -9,14 +9,17 @@ import { i18n } from '@/i18n/config';
 /**
  * ログイン認証情報のスキーマ
  * @remarks
- * - userIdとpasswordは必須
- * - rememberMeはオプション
+ * - emailとpasswordは必須
+ * - rememberMeはオプション（true=localStorage / false=sessionStorage にトークンを保存）
  * @remarks
  * - カスタムエラーメッセージは`error: () => i18n.t(tkeys.xxx.xxx)`の形式で記載
  * - アロー関数にすることで、言語が変更されても追従できる
  */
 export const loginCredentialsSchema = z.object({
-  userId: z.string().min(1, { error: () => i18n.t(tKeys.validations.require) }),
+  email: z
+    .string()
+    .min(1, { error: () => i18n.t(tKeys.validations.require) })
+    .pipe(z.email({ error: () => i18n.t(tKeys.validations.invalidEmail) })),
   password: z
     .string()
     .min(1, { error: () => i18n.t(tKeys.validations.require) })
@@ -35,36 +38,25 @@ export type LoginCredentials = z.infer<typeof loginCredentialsSchema>;
 export interface User {
   /** ユーザーID */
   readonly id: string;
-  /** ユーザー名 */
-  readonly username: string;
   /** メールアドレス */
   readonly email: string;
   /** 氏名 */
-  readonly fullName?: string | null;
+  readonly name: string;
 }
 
 export interface SessionInfo {
-  /** セッション有効期限 */
+  /** アクセストークンの有効期限 */
   readonly expiresAt: Date;
-  /** CSRF保護用トークン */
-  readonly csrfToken?: string;
 }
 
 export interface AuthSession {
   /** ユーザー情報 */
   readonly user: User;
-  /** セッション情報 */
+  /** セッション情報（ログイン時のみ有効期限を保持） */
   readonly sessionInfo?: SessionInfo;
 }
 
 export interface LoginResult {
   /** 認証セッション */
   readonly session: AuthSession;
-  /** レスポンスメッセージ */
-  readonly message: string;
-}
-
-export interface LogoutResult {
-  /** レスポンスメッセージ */
-  readonly message: string;
 }

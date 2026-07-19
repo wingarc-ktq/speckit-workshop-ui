@@ -5,13 +5,13 @@ import userEvent from '@testing-library/user-event';
  * ログインフォームの入力フィールドを取得する
  */
 export const getLoginFormElements = () => {
-  const userIdInput = screen.getByLabelText(/メールアドレスまたはユーザー名/i);
+  const emailInput = screen.getByLabelText(/メールアドレス/i);
   const passwordInput = screen.getByLabelText(/パスワード/i);
   const rememberMeCheckbox = screen.getByLabelText(/ログイン状態を記録する/i);
   const submitButton = screen.getByRole('button', { name: /ログイン/i });
 
   return {
-    userIdInput,
+    emailInput,
     passwordInput,
     rememberMeCheckbox,
     submitButton,
@@ -22,17 +22,17 @@ export const getLoginFormElements = () => {
  * ログインフォームに値を入力する
  */
 export const fillLoginForm = async (credentials: {
-  userId: string;
+  email: string;
   password: string;
   rememberMe: boolean;
 }) => {
   const user = userEvent.setup();
-  const { userIdInput, passwordInput, rememberMeCheckbox } =
+  const { emailInput, passwordInput, rememberMeCheckbox } =
     getLoginFormElements();
 
-  if (credentials.userId) {
-    await user.clear(userIdInput);
-    await user.type(userIdInput, credentials.userId);
+  if (credentials.email) {
+    await user.clear(emailInput);
+    await user.type(emailInput, credentials.email);
   }
 
   if (credentials.password) {

@@ -59,10 +59,8 @@ describe('LoginForm', () => {
   test('正しくレンダリングされる', () => {
     renderLoginForm();
 
-    // userIdフィールドはrequiredではないため*なし
-    expect(
-      screen.getByLabelText('メールアドレスまたはユーザー名')
-    ).toBeInTheDocument();
+    // emailフィールドはrequiredではないため*なし
+    expect(screen.getByLabelText('メールアドレス')).toBeInTheDocument();
     expect(screen.getByLabelText('パスワード *')).toBeInTheDocument();
     expect(screen.getByLabelText('ログイン状態を記録する')).toBeInTheDocument();
     expect(
@@ -75,15 +73,15 @@ describe('LoginForm', () => {
     renderLoginForm();
 
     await fillLoginForm({
-      userId: 'test@example.com',
+      email: 'test@example.com',
       password: 'password123',
       rememberMe: true,
     });
 
-    const { userIdInput, passwordInput, rememberMeCheckbox } =
+    const { emailInput, passwordInput, rememberMeCheckbox } =
       getLoginFormElements();
 
-    expect(userIdInput).toHaveValue('test@example.com');
+    expect(emailInput).toHaveValue('test@example.com');
     expect(passwordInput).toHaveValue('password123');
     expect(rememberMeCheckbox).toBeChecked();
   });
@@ -110,7 +108,7 @@ describe('LoginForm', () => {
     renderLoginForm();
 
     await fillLoginForm({
-      userId: 'test@example.com',
+      email: 'test@example.com',
       password: 'password123',
       rememberMe: true,
     });
@@ -121,7 +119,7 @@ describe('LoginForm', () => {
 
     expect(loginUser).toHaveBeenCalledTimes(1);
     expect(loginUser.mock.calls[0][0]).toEqual({
-      userId: 'test@example.com',
+      email: 'test@example.com',
       password: 'password123',
       rememberMe: true,
     });
@@ -130,7 +128,7 @@ describe('LoginForm', () => {
   describe('遷移先', () => {
     test('通常はログイン後にルートに遷移する', async () => {
       loginUser.mockResolvedValue({
-        userId: 'test@example.com',
+        email: 'test@example.com',
         sessionId: 'session123',
       });
 
@@ -140,7 +138,7 @@ describe('LoginForm', () => {
       expect(screen.queryByTestId('home-page')).not.toBeInTheDocument();
 
       await fillLoginForm({
-        userId: 'test@example.com',
+        email: 'test@example.com',
         password: 'password123',
         rememberMe: false,
       });
@@ -155,7 +153,7 @@ describe('LoginForm', () => {
 
     test('stateに遷移元のパスが含まれる場合はログイン後にstate.from.pathnameに遷移する', async () => {
       loginUser.mockResolvedValue({
-        userId: 'test@example.com',
+        email: 'test@example.com',
         sessionId: 'session123',
       });
 
@@ -171,7 +169,7 @@ describe('LoginForm', () => {
       expect(screen.queryByTestId('dashboard-page')).not.toBeInTheDocument();
 
       await fillLoginForm({
-        userId: 'test@example.com',
+        email: 'test@example.com',
         password: 'password123',
         rememberMe: false,
       });
@@ -192,7 +190,7 @@ describe('LoginForm', () => {
       renderLoginForm();
 
       await fillLoginForm({
-        userId: 'test@example.com',
+        email: 'test@example.com',
         password: 'password123',
         rememberMe: true,
       });

@@ -49,7 +49,7 @@ describe('LoginPage', () => {
     renderWithRouter();
 
     await fillLoginForm({
-      userId: 'testuser@example.com',
+      email: 'testuser@example.com',
       password: 'password123',
       rememberMe: false,
     });
@@ -58,7 +58,7 @@ describe('LoginPage', () => {
 
     expect(mockLoginUser).toHaveBeenCalledTimes(1);
     expect(mockLoginUser.mock.calls[0][0]).toEqual({
-      userId: 'testuser@example.com',
+      email: 'testuser@example.com',
       password: 'password123',
       rememberMe: false,
     });

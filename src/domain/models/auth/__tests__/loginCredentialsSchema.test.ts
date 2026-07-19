@@ -9,11 +9,11 @@ describe('loginCredentialsSchema', () => {
     await loadZodLocale('ja');
   });
 
-  describe('userId フィールドのバリデーション', () => {
+  describe('email フィールドのバリデーション', () => {
     describe('必須バリデーション', () => {
       test.concurrent('空文字の場合はエラーになること', () => {
         const result = loginCredentialsSchema.safeParse({
-          userId: '',
+          email: '',
           password: 'password123',
         });
 
@@ -21,74 +21,52 @@ describe('loginCredentialsSchema', () => {
         expect(result.error?.issues[0].message).toBe('必須項目です');
       });
 
-      test.concurrent('有効な文字列の場合は成功すること', () => {
+      test.concurrent('有効なメールアドレスの場合は成功すること', () => {
         const result = loginCredentialsSchema.safeParse({
-          userId: 'user@example.com',
+          email: 'user@example.com',
           password: 'password123',
         });
 
         expect(result.success).toBe(true);
-        expect(result.data?.userId).toBe('user@example.com');
+        expect(result.data?.email).toBe('user@example.com');
       });
     });
 
     describe('メールアドレス形式', () => {
-      test.concurrent('有効なメールアドレス形式の場合は成功すること', () => {
+      test.concurrent(
+        'サブアドレス付きの形式でも成功すること',
+        () => {
+          const result = loginCredentialsSchema.safeParse({
+            email: 'test.user+tag@example.co.jp',
+            password: 'password123',
+          });
+
+          expect(result.success).toBe(true);
+        }
+      );
+
+      test.concurrent('@ を含まない場合はエラーになること', () => {
         const result = loginCredentialsSchema.safeParse({
-          userId: 'test.user+tag@example.co.jp',
+          email: 'testuser123',
           password: 'password123',
         });
 
-        expect(result.success).toBe(true);
-      });
-    });
-
-    describe('ユーザー名形式', () => {
-      test.concurrent('英数字のユーザー名は成功すること', () => {
-        const result = loginCredentialsSchema.safeParse({
-          userId: 'testuser123',
-          password: 'password123',
-        });
-
-        expect(result.success).toBe(true);
-      });
-
-      test.concurrent('アンダースコアを含むユーザー名は成功すること', () => {
-        const result = loginCredentialsSchema.safeParse({
-          userId: 'test_user',
-          password: 'password123',
-        });
-
-        expect(result.success).toBe(true);
+        expect(result.success).toBe(false);
+        expect(result.error?.issues[0].message).toBe(
+          '有効なメールアドレスを入力してください'
+        );
       });
 
-      test.concurrent('ハイフンを含むユーザー名は成功すること', () => {
+      test.concurrent('ドメインが無い場合はエラーになること', () => {
         const result = loginCredentialsSchema.safeParse({
-          userId: 'test-user',
+          email: 'test@',
           password: 'password123',
         });
 
-        expect(result.success).toBe(true);
-      });
-    });
-
-    describe('エッジケース', () => {
-      test.concurrent('1文字のuserIdは成功すること', () => {
-        const result = loginCredentialsSchema.safeParse({
-          userId: 'a',
-          password: 'password123',
-        });
-
-        expect(result.success).toBe(true);
-      });
-
-      test.concurrent('長いuserIdでも成功すること', () => {
-        const result = loginCredentialsSchema.safeParse({
-          userId: 'a'.repeat(100),
-          password: 'password123',
-        });
-
-        expect(result.success).toBe(true);
+        expect(result.success).toBe(false);
+        expect(result.error?.issues[0].message).toBe(
+          '有効なメールアドレスを入力してください'
+        );
       });
     });
   });
@@ -97,7 +75,7 @@ describe('loginCredentialsSchema', () => {
     describe('必須バリデーション', () => {
       test.concurrent('空文字の場合はエラーになること', () => {
         const result = loginCredentialsSchema.safeParse({
-          userId: 'test@example.com',
+          email: 'test@example.com',
           password: '',
         });
 
@@ -107,7 +85,7 @@ describe('loginCredentialsSchema', () => {
 
       test.concurrent('有効なパスワードの場合は成功すること', () => {
         const result = loginCredentialsSchema.safeParse({
-          userId: 'test@example.com',
+          email: 'test@example.com',
           password: 'password123',
         });
 
@@ -118,7 +96,7 @@ describe('loginCredentialsSchema', () => {
     describe('最小文字数バリデーション（境界値テスト）', () => {
       test.concurrent('7文字の場合はエラーになること', () => {
         const result = loginCredentialsSchema.safeParse({
-          userId: 'test@example.com',
+          email: 'test@example.com',
           password: 'pass123',
         });
 
@@ -130,7 +108,7 @@ describe('loginCredentialsSchema', () => {
 
       test.concurrent('8文字ちょうどの場合は成功すること', () => {
         const result = loginCredentialsSchema.safeParse({
-          userId: 'test@example.com',
+          email: 'test@example.com',
           password: 'pass1234',
         });
 
@@ -141,7 +119,7 @@ describe('loginCredentialsSchema', () => {
     describe('最大文字数バリデーション（境界値テスト）', () => {
       test.concurrent('36文字ちょうどの場合は成功すること', () => {
         const result = loginCredentialsSchema.safeParse({
-          userId: 'test@example.com',
+          email: 'test@example.com',
           password: 'a'.repeat(36),
         });
 
@@ -150,7 +128,7 @@ describe('loginCredentialsSchema', () => {
 
       test.concurrent('37文字の場合はエラーになること', () => {
         const result = loginCredentialsSchema.safeParse({
-          userId: 'test@example.com',
+          email: 'test@example.com',
           password: 'a'.repeat(37),
         });
 
@@ -164,7 +142,7 @@ describe('loginCredentialsSchema', () => {
     describe('特殊文字を含むパスワード', () => {
       test.concurrent('記号を含むパスワードは成功すること', () => {
         const result = loginCredentialsSchema.safeParse({
-          userId: 'test@example.com',
+          email: 'test@example.com',
           password: 'P@ssw0rd!',
         });
 
@@ -173,7 +151,7 @@ describe('loginCredentialsSchema', () => {
 
       test.concurrent('スペースを含むパスワードは成功すること', () => {
         const result = loginCredentialsSchema.safeParse({
-          userId: 'test@example.com',
+          email: 'test@example.com',
           password: 'pass word 123',
         });
 
@@ -182,7 +160,7 @@ describe('loginCredentialsSchema', () => {
 
       test.concurrent('日本語を含むパスワードは成功すること', () => {
         const result = loginCredentialsSchema.safeParse({
-          userId: 'test@example.com',
+          email: 'test@example.com',
           password: 'パスワード123',
         });
 
@@ -194,7 +172,7 @@ describe('loginCredentialsSchema', () => {
   describe('rememberMe フィールドのバリデーション', () => {
     test.concurrent('trueの場合は成功すること', () => {
       const result = loginCredentialsSchema.safeParse({
-        userId: 'test@example.com',
+        email: 'test@example.com',
         password: 'password123',
         rememberMe: true,
       });
@@ -205,7 +183,7 @@ describe('loginCredentialsSchema', () => {
 
     test.concurrent('falseの場合は成功すること', () => {
       const result = loginCredentialsSchema.safeParse({
-        userId: 'test@example.com',
+        email: 'test@example.com',
         password: 'password123',
         rememberMe: false,
       });
@@ -216,7 +194,7 @@ describe('loginCredentialsSchema', () => {
 
     test.concurrent('省略した場合は成功すること', () => {
       const result = loginCredentialsSchema.safeParse({
-        userId: 'test@example.com',
+        email: 'test@example.com',
         password: 'password123',
       });
 
@@ -226,7 +204,7 @@ describe('loginCredentialsSchema', () => {
 
     test.concurrent('undefinedの場合は成功すること', () => {
       const result = loginCredentialsSchema.safeParse({
-        userId: 'test@example.com',
+        email: 'test@example.com',
         password: 'password123',
         rememberMe: undefined,
       });

@@ -5,7 +5,7 @@ info:
   description: ファイル管理API（1dayインターン用）
 
 servers:
-  - url: http://localhost:3000/api/v1
+  - url: http://localhost:8082/api/v1
     description: Development server
 
 paths:

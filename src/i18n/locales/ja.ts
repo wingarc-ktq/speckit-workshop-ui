@@ -71,9 +71,9 @@ export const ja = {
     title: 'ログイン',
     subtitle: 'アカウントにログインしてください',
     form: {
-      userId: 'メールアドレスまたはユーザー名',
+      email: 'メールアドレス',
       password: 'パスワード',
-      userIdPlaceholder: 'メールアドレスまたはユーザー名を入力',
+      emailPlaceholder: 'メールアドレスを入力',
       passwordPlaceholder: 'パスワードを入力',
       loginButton: 'ログイン',
       rememberMe: 'ログイン状態を記録する',
