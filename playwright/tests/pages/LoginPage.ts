@@ -12,11 +12,11 @@ export class LoginPage extends BasePage {
   }
 
   /**
-   * メールアドレスまたはユーザー名を入力
+   * メールアドレスを入力
    */
   async fillEmail(email: string) {
     await this.page
-      .getByRole('textbox', { name: 'メールアドレスまたはユーザー名' })
+      .getByRole('textbox', { name: 'メールアドレス' })
       .fill(email);
   }
 

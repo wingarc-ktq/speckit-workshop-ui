@@ -1,6 +1,6 @@
 import 'react-i18next';
 
-import type {ja} from './locales/ja';
+import type { ja } from './locales/ja';
 
 declare module 'i18next' {
   interface CustomTypeOptions {

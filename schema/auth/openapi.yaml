@@ -1,369 +1,227 @@
-openapi: 3.1.0
+openapi: 3.0.3
 info:
-  title: Simple Session Authentication API
+  title: Authentication Service API
+  version: 1.0.0
   description: |
-    シンプルなセッションベース認証APIのサンプル - ログインとログアウト
+    JWT ベースの認証サービス API
 
     **Features:**
-    - ユーザーログイン（セッションCookie発行）
-    - ユーザーログアウト（セッション破棄）
-    - Cookie based認証
-    - CSRF保護対応
-  version: 1.0.0
+    - ユーザー登録
+    - ログイン（JWT 発行）
+    - 自身のプロフィール取得（JWT 検証付き）
 
 servers:
-  - url: http://localhost:3000/api
+  - url: http://localhost:8081/api/v1
     description: Development server
 
 tags:
-  - name: Authentication
-    description: ログインとログアウト
+  - name: auth
+    description: ユーザー認証
 
 paths:
-  /auth/login:
+  /auth/register:
     post:
-      summary: ユーザーログイン
-      description: |
-        ユーザー認証とセッションCookieの発行
-
-        成功時にSet-Cookieヘッダーでセッション情報を返します：
-        - `session_id`: HTTPOnly, Secure, SameSite=Strict
-        - `csrf_token`: CSRF保護用トークン（オプション）
-      operationId: loginUser
+      summary: ユーザー登録
+      operationId: registerUser
       tags:
-        - Authentication
+        - auth
       requestBody:
         required: true
         content:
-          application/x-www-form-urlencoded:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: 登録成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: 不正なリクエスト
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: メールアドレス重複
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      summary: ログイン (JWT発行)
+      operationId: loginUser
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
             schema:
               $ref: '#/components/schemas/LoginRequest'
-            examples:
-              emailLogin:
-                summary: メールアドレスでログイン
-                value:
-                  userId: 'user@example.com'
-                  password: 'password123'
-                  rememberMe: false
-              usernameLogin:
-                summary: ユーザー名でログイン
-                value:
-                  userId: 'john_doe'
-                  password: 'password123'
-                  rememberMe: true
       responses:
         '200':
           description: ログイン成功
-          headers:
-            Set-Cookie:
-              description: セッションCookie
-              schema:
-                type: string
-                example: 'session_id=abc123def456; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=86400'
-            X-CSRF-Token:
-              description: CSRF保護用トークン（必要な場合）
-              schema:
-                type: string
-                example: 'csrf_1234567890abcdef'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/LoginResponse'
-              examples:
-                success:
-                  summary: ログイン成功
-                  value:
-                    message: 'ログインに成功しました'
-                    data:
-                      user:
-                        id: '550e8400-e29b-41d4-a716-446655440000'
-                        username: 'john_doe'
-                        email: 'user@example.com'
-                        fullName: 'John Doe'
-                      sessionInfo:
-                        expiresAt: '2024-01-16T10:30:00Z'
-                        csrfToken: 'csrf_1234567890abcdef'
         '400':
-          description: ログイン情報が無効
+          description: 不正なリクエスト
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                invalidCredentials:
-                  summary: 認証情報が無効
-                  value:
-                    error: 'INVALID_CREDENTIALS'
-                    message: 'メールアドレス/ユーザー名またはパスワードが正しくありません'
-                    timestamp: '2024-01-15T10:30:00Z'
-        '429':
-          description: ログイン試行回数超過
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                tooManyAttempts:
-                  summary: ログイン試行回数超過
-                  value:
-                    error: 'TOO_MANY_ATTEMPTS'
-                    message: 'ログイン試行回数が上限を超えました。しばらく時間をおいてから再度お試しください'
-                    timestamp: '2024-01-15T10:30:00Z'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  /auth/logout:
-    post:
-      summary: ユーザーログアウト
-      description: |
-        ユーザーセッションの無効化
-
-        セッションCookieを削除し、サーバー側のセッションも破棄します
-      operationId: logoutUser
-      tags:
-        - Authentication
-      security:
-        - cookieAuth: []
-      parameters:
-        - in: header
-          name: X-CSRF-Token
-          schema:
-            type: string
-          description: CSRF保護用トークン（CSRF保護が有効な場合は必須）
-          example: 'csrf_1234567890abcdef'
-      responses:
-        '200':
-          description: ログアウト成功
-          headers:
-            Set-Cookie:
-              description: セッションCookie削除
-              schema:
-                type: string
-                example: 'session_id=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LogoutResponse'
-              examples:
-                success:
-                  summary: ログアウト成功
-                  value:
-                    message: 'ログアウトしました'
         '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          description: CSRF検証エラー
+          description: 認証失敗
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                csrfError:
-                  summary: CSRF検証エラー
-                  value:
-                    error: 'CSRF_VALIDATION_ERROR'
-                    message: 'CSRFトークンが無効です'
-                    timestamp: '2024-01-15T10:30:00Z'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
 
-  /auth/session:
+  /auth/me:
     get:
-      summary: 現在のセッション情報取得
-      description: 現在ログイン中のユーザー情報とセッション状態を取得
-      operationId: getSession
+      summary: 認証中ユーザーの情報を取得
+      operationId: getCurrentUser
       tags:
-        - Authentication
+        - auth
       security:
-        - cookieAuth: []
+        - bearerAuth: []
       responses:
         '200':
-          description: セッション情報取得成功
+          description: 取得成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SessionResponse'
-              examples:
-                success:
-                  summary: セッション情報
-                  value:
-                    user:
-                      id: '550e8400-e29b-41d4-a716-446655440000'
-                      username: 'john_doe'
-                      email: 'user@example.com'
-                      fullName: 'John Doe'
-                    sessionInfo:
-                      expiresAt: '2024-01-16T10:30:00Z'
-                      csrfToken: 'csrf_1234567890abcdef'
+                $ref: '#/components/schemas/UserResponse'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 components:
   securitySchemes:
-    cookieAuth:
-      type: apiKey
-      in: cookie
-      name: session_id
-      description: セッションID Cookie
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
 
   schemas:
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+        - name
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          example: 'taro@example.com'
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          example: 'P@ssw0rd!'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: '田中 太郎'
+
     LoginRequest:
       type: object
       required:
-        - userId
+        - email
         - password
       properties:
-        userId:
+        email:
           type: string
-          description: User identifier (email address or username)
-          example: 'john.doe@example.com'
-          minLength: 1
-          maxLength: 100
+          format: email
+          example: 'taro@example.com'
         password:
           type: string
-          description: User password
-          example: 'SecurePassword123!'
-          minLength: 8
-          maxLength: 36
-        rememberMe:
-          type: boolean
-          description: セッションを長期間保持するかどうか
-          default: false
-          example: true
+          format: password
+          example: 'P@ssw0rd!'
 
     LoginResponse:
       type: object
       required:
-        - message
-        - data
-      properties:
-        message:
-          type: string
-          example: 'ログインに成功しました'
-        data:
-          type: object
-          required:
-            - user
-          properties:
-            user:
-              $ref: '#/components/schemas/UserProfile'
-            sessionInfo:
-              $ref: '#/components/schemas/SessionInfo'
-
-    LogoutResponse:
-      type: object
-      required:
-        - message
-      properties:
-        message:
-          type: string
-          example: 'ログアウトしました'
-
-    SessionResponse:
-      type: object
-      required:
+        - accessToken
+        - tokenType
+        - expiresIn
         - user
-        - sessionInfo
       properties:
+        accessToken:
+          type: string
+          description: JWT アクセストークン
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+        tokenType:
+          type: string
+          enum:
+            - Bearer
+          example: 'Bearer'
+        expiresIn:
+          type: integer
+          description: トークンの有効期限（秒）
+          example: 3600
         user:
-          $ref: '#/components/schemas/UserProfile'
-        sessionInfo:
-          $ref: '#/components/schemas/SessionInfo'
+          $ref: '#/components/schemas/User'
 
-    UserProfile:
+    User:
       type: object
       required:
         - id
-        - username
         - email
+        - name
+        - createdAt
+        - updatedAt
       properties:
         id:
           type: string
           format: uuid
-          description: Unique user identifier
           example: '550e8400-e29b-41d4-a716-446655440000'
-        username:
-          type: string
-          description: Username
-          example: 'john_doe'
         email:
           type: string
           format: email
-          description: User email address
-          example: 'john.doe@example.com'
-        fullName:
+          example: 'taro@example.com'
+        name:
           type: string
-          nullable: true
-          description: User's full name
-          example: 'John Doe'
-
-    SessionInfo:
-      type: object
-      required:
-        - expiresAt
-      properties:
-        expiresAt:
+          example: '田中 太郎'
+        createdAt:
           type: string
           format: date-time
-          description: セッション有効期限
-          example: '2024-01-16T10:30:00Z'
-        csrfToken:
+          example: '2026-05-07T10:30:00Z'
+        updatedAt:
           type: string
-          description: CSRF保護用トークン（CSRF保護が有効な場合のみ）
-          example: 'csrf_1234567890abcdef'
+          format: date-time
+          example: '2026-05-07T10:30:00Z'
+
+    UserResponse:
+      type: object
+      required:
+        - user
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
 
     ErrorResponse:
       type: object
       required:
-        - error
         - message
-        - timestamp
+        - code
       properties:
-        error:
-          type: string
-          description: Error code
-          example: 'INVALID_CREDENTIALS'
         message:
           type: string
-          description: Human-readable error message
-          example: 'Invalid email/username or password'
-        timestamp:
+          example: '認証に失敗しました'
+        code:
           type: string
-          format: date-time
-          description: Error occurrence timestamp
-          example: '2024-01-15T10:30:00Z'
-
-  responses:
-    Unauthorized:
-      description: 認証が必要またはセッションが無効
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            noSession:
-              summary: セッションが存在しない
-              value:
-                error: 'NO_SESSION'
-                message: 'ログインが必要です'
-                timestamp: '2024-01-15T10:30:00Z'
-            sessionExpired:
-              summary: セッション期限切れ
-              value:
-                error: 'SESSION_EXPIRED'
-                message: 'セッションの有効期限が切れました。再度ログインしてください'
-                timestamp: '2024-01-15T10:30:00Z'
-
-    InternalServerError:
-      description: Internal server error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            serverError:
-              summary: Internal server error
-              value:
-                error: 'INTERNAL_SERVER_ERROR'
-                message: 'An unexpected error occurred'
-                timestamp: '2024-01-15T10:30:00Z'
+          example: 'AUTH_FAILED'

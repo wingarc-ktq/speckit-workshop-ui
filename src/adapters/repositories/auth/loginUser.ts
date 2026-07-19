@@ -1,5 +1,6 @@
 import '@/adapters/axios';
 
+import { setAccessToken } from '@/adapters/authToken';
 import { loginUser as loginUserApi } from '@/adapters/generated/auth';
 import type { LoginCredentials, LoginResult } from '@/domain/models/auth';
 
@@ -17,27 +18,24 @@ export const loginUser: LoginUser = async (
   credentials: LoginCredentials
 ): Promise<LoginResult> => {
   try {
-    const { data, message } = await loginUserApi({
-      userId: credentials.userId,
+    const { accessToken, expiresIn, user } = await loginUserApi({
+      email: credentials.email,
       password: credentials.password,
-      rememberMe: credentials.rememberMe,
     });
 
+    // rememberMe に応じて保存先（localStorage/sessionStorage）を切り替えて保存
+    setAccessToken(accessToken, credentials.rememberMe ?? false);
+
     return {
-      message,
       session: {
         user: {
-          id: data.user.id,
-          username: data.user.username,
-          email: data.user.email,
-          fullName: data.user.fullName ?? null,
+          id: user.id,
+          email: user.email,
+          name: user.name,
         },
-        sessionInfo: data.sessionInfo
-          ? {
-              expiresAt: new Date(data.sessionInfo.expiresAt),
-              csrfToken: data.sessionInfo.csrfToken,
-            }
-          : undefined,
+        sessionInfo: {
+          expiresAt: new Date(Date.now() + expiresIn * 1000),
+        },
       },
     };
   } catch (error) {

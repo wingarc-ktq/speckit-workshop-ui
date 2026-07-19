@@ -52,6 +52,12 @@ export const ja = {
       gatewayTimeout: 'サーバーが時間内に応答しませんでした。',
     },
   },
+  components: {
+    loadError: {
+      message: '読み込みに失敗しました',
+      reload: '再読み込み',
+    },
+  },
   homePage: {
     title: 'ダッシュボード',
     welcome: 'Dashboardへようこそ。こちらがメインのダッシュボードページです。',
@@ -65,9 +71,9 @@ export const ja = {
     title: 'ログイン',
     subtitle: 'アカウントにログインしてください',
     form: {
-      userId: 'メールアドレスまたはユーザー名',
+      email: 'メールアドレス',
       password: 'パスワード',
-      userIdPlaceholder: 'メールアドレスまたはユーザー名を入力',
+      emailPlaceholder: 'メールアドレスを入力',
       passwordPlaceholder: 'パスワードを入力',
       loginButton: 'ログイン',
       rememberMe: 'ログイン状態を記録する',

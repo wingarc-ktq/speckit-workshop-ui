@@ -1,7 +1,4 @@
-import {
-  mockSessionResponse,
-  mockSessionResponseVariations,
-} from '@/__fixtures__/auth';
+import { mockUserResponse } from '@/__fixtures__/auth';
 import { customInstance } from '@/adapters/axios';
 import { AuthException, WebApiException } from '@/domain/errors';
 
@@ -15,59 +12,21 @@ describe('getCurrentSession', () => {
     test.concurrent(
       '正常なレスポンスの場合、適切にAuthSessionに変換される',
       async () => {
-        mocked.mockResolvedValue(mockSessionResponse);
+        mocked.mockResolvedValue(mockUserResponse);
 
         const r = await getCurrentSession();
 
         expect(mocked).toHaveBeenCalledWith({
           method: 'GET',
-          url: '/auth/session',
+          url: '/auth/me',
         });
         expect(r).toEqual({
           user: {
-            id: mockSessionResponse.user.id,
-            username: mockSessionResponse.user.username,
-            email: mockSessionResponse.user.email,
-            fullName: mockSessionResponse.user.fullName,
-          },
-          sessionInfo: {
-            expiresAt: new Date(mockSessionResponse.sessionInfo.expiresAt),
-            csrfToken: mockSessionResponse.sessionInfo.csrfToken,
+            id: mockUserResponse.user.id,
+            email: mockUserResponse.user.email,
+            name: mockUserResponse.user.name,
           },
         });
-      }
-    );
-
-    test.concurrent('fullNameがnullの場合、nullが保持される', async () => {
-      const mockData = mockSessionResponseVariations.withNullFullName();
-      mocked.mockResolvedValue(mockData);
-
-      const r = await getCurrentSession();
-
-      expect(r.user.fullName).toBeNull();
-    });
-
-    test.concurrent('fullNameがundefinedの場合、nullに変換される', async () => {
-      const mockData = mockSessionResponseVariations.withUndefinedFullName();
-      mocked.mockResolvedValue(mockData);
-
-      const r = await getCurrentSession();
-
-      expect(r.user.fullName).toBeNull();
-    });
-
-    test.concurrent(
-      '日付文字列が正しくDateオブジェクトに変換される',
-      async () => {
-        const testDate = '2025-06-17T12:00:00.000Z';
-        const mockData = mockSessionResponseVariations.withCustomDate(testDate);
-
-        mocked.mockResolvedValue(mockData);
-
-        const r = await getCurrentSession();
-
-        expect(r.sessionInfo?.expiresAt).toBeInstanceOf(Date);
-        expect(r.sessionInfo?.expiresAt?.toISOString()).toBe(testDate);
       }
     );
   });

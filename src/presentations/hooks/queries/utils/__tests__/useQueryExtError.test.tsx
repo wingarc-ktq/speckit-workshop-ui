@@ -43,8 +43,7 @@ describe('useQueryExtError', () => {
   describe('エラーが発生しない場合', () => {
     test.concurrent('取得結果をそのまま返す', async () => {
       const r = hook(useQueryOk);
-      await waitFor(() => r.result.current.isPending);
-      expect(r.result.current.data).toBe('data');
+      await waitFor(() => expect(r.result.current.data).toBe('data'));
       expect(r.result.current.error).toBeNull();
       expect(r.result.current.isError).toBe(false);
     });

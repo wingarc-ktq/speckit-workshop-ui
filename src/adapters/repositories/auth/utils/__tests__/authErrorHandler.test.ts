@@ -1,11 +1,7 @@
 import { AuthException, AuthErrorCode } from '@/domain/errors';
 import { WebApiException, NetworkException } from '@/domain/errors';
 
-import {
-  handleLoginError,
-  handleSessionError,
-  handleLogoutError,
-} from '../authErrorHandler';
+import { handleLoginError, handleSessionError } from '../authErrorHandler';
 
 describe('authErrorHandler', () => {
   describe('handleLoginError', () => {
@@ -107,20 +103,5 @@ describe('authErrorHandler', () => {
         }
       }
     );
-  });
-
-  describe('handleLogoutError', () => {
-    test.concurrent('401エラーでAuthException.noSession()をthrowする', () => {
-      const webApiError = new WebApiException(401, 'Unauthorized', {
-        message: 'No session',
-      });
-
-      try {
-        handleLogoutError(webApiError);
-      } catch (error) {
-        expect(error).toBeInstanceOf(AuthException);
-        expect((error as AuthException).code).toBe(AuthErrorCode.NO_SESSION);
-      }
-    });
   });
 });

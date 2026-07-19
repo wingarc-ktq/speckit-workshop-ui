@@ -6,7 +6,7 @@ import { HTTP_STATUS_CODES } from '@/domain/constants';
 import { WebApiException } from '@/domain/errors';
 
 interface AuthErrorFallbackProps {
-  error: Error;
+  error: unknown;
 }
 
 /**

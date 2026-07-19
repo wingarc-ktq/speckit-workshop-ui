@@ -19,4 +19,9 @@ export const unauthorizedError = new WebApiException(
   'UNAUTHORIZED'
 );
 
+export const forbiddenError = new WebApiException(
+  HTTP_STATUS_CLIENT_ERROR.FORBIDDEN,
+  'FORBIDDEN'
+);
+
 export const networkError = new NetworkException('Network error');

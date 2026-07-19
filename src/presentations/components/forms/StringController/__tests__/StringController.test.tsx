@@ -50,7 +50,9 @@ describe('StringController', () => {
     test('smallサイズで表示される', () => {
       render(<BasicTestForm />);
       const input = screen.getByLabelText('テストフィールド');
-      expect(input).toHaveClass('MuiInputBase-inputSizeSmall');
+      expect(input.closest('.MuiInputBase-root')).toHaveClass(
+        'MuiInputBase-sizeSmall'
+      );
     });
 
     describe('初期値', () => {

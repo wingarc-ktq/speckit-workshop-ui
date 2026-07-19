@@ -59,9 +59,12 @@ NEW_PLAN="$IMPL_PLAN"  # Alias for compatibility with existing code
 AGENT_TYPE="${1:-}"
 
 # Agent-specific file paths  
-CLAUDE_FILE="$REPO_ROOT/CLAUDE.md"
-GEMINI_FILE="$REPO_ROOT/GEMINI.md"
-COPILOT_FILE="$REPO_ROOT/.github/agents/copilot-instructions.md"
+# NOTE: This project consolidates all agent context into AGENTS.md (single source
+# of truth). CLAUDE.md / GEMINI.md import it via `@AGENTS.md`; copilot/cline read it
+# through symlinks. So plan-derived context is always written to AGENTS.md.
+CLAUDE_FILE="$REPO_ROOT/AGENTS.md"
+GEMINI_FILE="$REPO_ROOT/AGENTS.md"
+COPILOT_FILE="$REPO_ROOT/AGENTS.md"
 CURSOR_FILE="$REPO_ROOT/.cursor/rules/specify-rules.mdc"
 QWEN_FILE="$REPO_ROOT/QWEN.md"
 AGENTS_FILE="$REPO_ROOT/AGENTS.md"
@@ -514,7 +517,7 @@ update_agent_file() {
     fi
     
     log_info "Updating $agent_name context file: $target_file"
-    
+
     local project_name
     project_name=$(basename "$REPO_ROOT")
     local current_date

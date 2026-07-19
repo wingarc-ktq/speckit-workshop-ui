@@ -2,13 +2,22 @@ import axios from 'axios';
 
 import { NetworkException, WebApiException } from '@/domain/errors';
 
+import { getAccessToken } from './authToken';
+
 import type { AxiosError, AxiosRequestConfig } from 'axios';
 
 const axiosClient = axios.create({
-  // Base URL設定 - 環境変数から取得、デフォルトは開発用
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api',
-  withCredentials: true,
+  // Base URL設定 - 環境変数から取得。既定は同一オリジン経由（Vite proxy / ゲートウェイ）
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
   paramsSerializer: { indexes: null },
+});
+
+// JWT 認証: 保存済みトークンがあれば Authorization ヘッダーに付与する
+axiosClient.interceptors.request.use((config) => {
+  const token = getAccessToken();
+  if (token) config.headers.set('Authorization', `Bearer ${token}`);
+
+  return config;
 });
 
 axiosClient.interceptors.response.use(null, (error: AxiosError) => {

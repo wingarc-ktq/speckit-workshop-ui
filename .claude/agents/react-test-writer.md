@@ -199,8 +199,8 @@ test('ユーザーがボタンをクリックできること', () => {
 
 ```typescript
 // Prefer getByRole for accessibility
-screen.getByRole('button', {name: 'ボタン名'});
-screen.getByRole('heading', {name: 'タイトル'});
+screen.getByRole('button', { name: 'ボタン名' });
+screen.getByRole('heading', { name: 'タイトル' });
 
 // Use getByText for non-interactive elements
 screen.getByText('表示テキスト');

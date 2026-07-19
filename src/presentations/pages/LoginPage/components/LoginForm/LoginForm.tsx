@@ -40,7 +40,7 @@ export const LoginForm: React.FC = () => {
   } = useForm<LoginCredentials>({
     resolver: zodResolver(loginCredentialsSchema),
     defaultValues: {
-      userId: '',
+      email: '',
       password: '',
       rememberMe: false,
     },
@@ -66,12 +66,12 @@ export const LoginForm: React.FC = () => {
   return (
     <S.LoginFormContainer onSubmit={handleSubmit(login)}>
       <StringController
-        name="userId"
+        name="email"
         control={control}
         render={(props) => (
           <FormField
             {...props}
-            label={t(tKeys.loginPage.form.userId)}
+            label={t(tKeys.loginPage.form.email)}
             size="medium"
           />
         )}

@@ -33,7 +33,7 @@
 
 - [x] **T003** [P] [FOUND] `AuthException` クラスを `src/domain/errors/AuthException.ts` に作成 ✅
   - `WebApiException` を継承 ✅
-  - `AuthErrorCode` 型を定義: `INVALID_CREDENTIALS` | `NO_SESSION` | `SESSION_EXPIRED` | `NETWORK_ERROR` ✅
+  - `AuthErrorCode` 型を定義: `INVALID_CREDENTIALS` | `UNAUTHORIZED` | `TOKEN_EXPIRED` | `NETWORK_ERROR` ✅
   - `src/domain/errors/__tests__/AuthException.test.ts` にユニットテストを追加 ✅
   - **✅ 完了**: AuthExceptionクラスとテスト作成完了、全10テスト合格
 
@@ -43,33 +43,37 @@
 
   - 実行: `pnpm run gen:api:auth`
   - 生成ファイル確認: `src/adapters/generated/auth.ts` ✅
-  - 型: `LoginRequest`, `LoginResponse`, `SessionResponse`, `ErrorResponse`, `UserProfile`, `SessionInfo` ✅
-  - 関数: `loginUser()`, `logoutUser()`, `getSession()` ✅
+  - 型: `LoginRequest`, `LoginResponse` (`accessToken`/`tokenType`/`expiresIn`/`user`), `UserResponse`, `RegisterRequest`, `User`, `ErrorResponse` (`message`/`code`) ✅
+  - 関数: `loginUser()`, `getCurrentUser()` (`GET /auth/me`), `registerUser()` ✅
+  - ログアウト用のサーバー API は存在しない（JWT はステートレス）✅
 
 - [x] **T005** [P] [FOUND] 認証エンドポイント用MSWハンドラーを `src/adapters/mocks/handlers/auth.ts` に作成 ✅
 
-  - POST `/api/auth/login` - 成功ケース (test@example.com / password123) と失敗ケース ✅
-  - GET `/api/auth/session` - 認証済みと未認証のケース ✅
-  - POST `/api/auth/logout` - 成功ケース ✅
+  - POST `/auth/login` - JSON ボディを検証し、成功時に JWT (`accessToken`/`tokenType`/`expiresIn`/`user`) を返す。失敗ケースは `{ message, code }` で 401 ✅
+  - GET `/auth/me` - `Authorization: Bearer` ヘッダーの有無で認証済み/未認証を判定 ✅
+  - ログアウトはサーバー API を持たない（JWT はステートレス）ためモック不要 ✅
   - ネットワーク遅延をシミュレート (1000ms delay) ✅
-  - `authHandlers` 配列をエクスポート ✅
+  - `getCustomAuthAPIMock()` をエクスポート ✅
 
 - [x] **T006** [FOUND] `src/adapters/mocks/handlers/index.ts` に認証ハンドラーを登録 ✅
 
-  - `authHandlers` をインポートしてメインハンドラー配列に追加 ✅
+  - `getCustomAuthAPIMock()` をインポートしてメインハンドラー配列に追加 ✅
 
 - [x] **T007** [P] [FOUND] `IAuthRepository` インターフェースを `src/adapters/repositories/auth/IAuthRepository.ts` に作成 ✅
 
-  - メソッド: `login(request: LoginRequest): Promise<LoginResponse>` ✅
-  - メソッド: `logout(): Promise<void>` ✅
-  - メソッド: `getSession(): Promise<SessionResponse>` ✅
+  - メソッド: `login(credentials: LoginCredentials): Promise<LoginResult>` — JWT を取得し保存 ✅
+  - メソッド: `logout(): Promise<void>` — クライアント側でトークンを破棄（サーバー API なし） ✅
+  - メソッド: `getCurrentSession(): Promise<AuthSession>` — `GET /auth/me` で認証状態を確認 ✅
   - **📝 実装パターン**: インターフェース+クラスではなく、関数ベースで実装済み (loginUser.ts, logoutUser.ts, getCurrentSession.ts)
 
 - [x] **T008** [FOUND] `AuthRepository` クラスを `src/adapters/repositories/auth/AuthRepository.ts` に実装 ✅
 
   - `IAuthRepository` を実装 ✅
   - Orval生成のAPI関数を使用 ✅
-  - Axiosエラーをドメイン例外に変換 (`AuthException`, `NetworkException`) ✅
+  - ログイン成功時に `setAccessToken(accessToken, rememberMe)` でトークンを保存（`src/adapters/authToken.ts`） ✅
+  - `GET /auth/me` は axios interceptor が `Authorization: Bearer` を付与（`src/adapters/axios.ts`） ✅
+  - ログアウトは `clearAccessToken()` によるクライアント側のトークン破棄 ✅
+  - Axiosエラー (`{ message, code }`) をドメイン例外に変換 (`AuthException`, `NetworkException`) ✅
   - `src/adapters/repositories/auth/__tests__/AuthRepository.test.ts` にユニットテストを追加 ✅
   - **📝 実装パターン**: 関数ベースのリポジトリパターンで実装済み
 
@@ -81,8 +85,8 @@
 
 - [x] **T010** [P] [FOUND] `src/i18n/locales/ja/translation.json` に認証関連の翻訳を追加 ✅
 
-  - `auth.login.title`, `auth.login.userId`, `auth.login.password`, `auth.login.rememberMe`, `auth.login.submit` ✅
-  - エラーメッセージ: `auth.login.errors.invalidCredentials`, `auth.login.errors.networkError`, `auth.login.errors.sessionExpired`, `auth.login.errors.noSession` ✅
+  - `auth.login.title`, `auth.login.email`, `auth.login.password`, `auth.login.rememberMe`, `auth.login.submit` ✅
+  - エラーメッセージ: `auth.login.errors.invalidCredentials`, `auth.login.errors.networkError`, `auth.login.errors.tokenExpired`, `auth.login.errors.unauthorized` ✅
   - `auth.logout.button`, `auth.logout.success` ✅
   - バリデーションメッセージ: `validation.required`, `validation.minLength`, `validation.maxLength` ✅
   - **📝 実装**: ja.ts に包括的な翻訳を実装済み
@@ -106,15 +110,16 @@
 - [x] **T012** [P] [US1] ログインフォームスキーマを `src/presentations/pages/LoginPage/schemas/loginFormSchema.ts` に作成 ✅
 
   - Zodとi18nエラーメッセージを使用 ✅
-  - フィールド: `userId` (1-100文字), `password` (8-36文字), `rememberMe` (boolean, デフォルトfalse) ✅
-  - `createLoginFormSchema(t)` 関数と `LoginFormData` 型をエクスポート ✅
+  - フィールド: `email` (必須・メール形式), `password` (8-36文字), `rememberMe` (boolean, オプション) ✅
+  - `rememberMe` はトークンの保存先を切り替えるフラグ（true=localStorage / false=sessionStorage） ✅
+  - `loginCredentialsSchema` と `LoginCredentials` 型をエクスポート ✅
   - **📝 実装場所**: `src/domain/models/auth/type.ts` に `loginCredentialsSchema` として実装済み
 
 - [x] **T013** [P] [US1] `useAuth` フックを `src/presentations/hooks/useAuth.ts` に作成 ✅
 
-  - TanStack Queryでセッション状態管理 ✅
-  - Query: セッション情報取得用の `useQuery` (staleTime: 5分) ✅
-  - Mutations: ログイン・ログアウト用の `useMutation` ✅
+  - TanStack Queryで認証状態を管理 ✅
+  - Query: `GET /auth/me` で現在のユーザーを取得する `useQuery` (staleTime: 5分) ✅
+  - Mutations: ログイン（トークン保存）・ログアウト（トークン破棄）用の `useMutation` ✅
   - 戻り値: `{ user, sessionInfo, isAuthenticated, isLoading, login, logout, loginError, logoutError }` ✅
   - `src/presentations/hooks/__tests__/useAuth.test.tsx` にユニットテストを追加 ✅
   - **📝 実装**: `src/presentations/hooks/queries/auth/` に useLoginMutation, useLogoutMutation, useGetCurrentSessionQuery として分割実装済み
@@ -122,7 +127,7 @@
 - [x] **T014** [US1] `LoginForm` コンポーネントを `src/presentations/pages/LoginPage/components/LoginForm.tsx` に作成 ✅
 
   - React Hook FormとZod resolverを使用 ✅
-  - MUIコンポーネント: `TextField` (userId, password), `Checkbox` (rememberMe), `Button` (submit) ✅
+  - MUIコンポーネント: `TextField` (email, password), `Checkbox` (rememberMe), `Button` (submit) ✅
   - `Alert` コンポーネントでエラー表示 ✅
   - Props: `onSubmit`, `isLoading`, `error` ✅
   - `src/presentations/pages/LoginPage/components/__tests__/LoginForm.test.tsx` にコンポーネントテストを追加 ✅
@@ -156,7 +161,7 @@
 
 **目的**: 無効な認証情報でのログイン失敗時に適切なエラーメッセージを表示
 
-**独立テスト**: http://localhost:5173/login で無効な認証情報（wrong@example.com / wrongpass）でログインするとエラーメッセージが表示されること
+**独立テスト**: http://localhost:5173/login で無効な認証情報（wrong@example.com / wrong_password）でログインするとエラーメッセージが表示されること
 
 ### User Story 2の実装
 
@@ -175,8 +180,8 @@
   - **📝 実装**: LoginForm/**tests**/ にテストファイル存在確認済み
 
 - [x] **T020** [US2] 手動検証: エラーシナリオをテスト ✅
-  - 無効な認証情報でテスト: invalid@example.com / wrongpass
-  - エラーメッセージを確認: "メールアドレス/ユーザー名またはパスワードが正しくありません"
+  - 無効な認証情報でテスト: invalid@example.com / wrong_password
+  - エラーメッセージを確認: "メールアドレスまたはパスワードが正しくありません"
   - ネットワークエラーをテスト: ログイン中に開発サーバーを停止 → ネットワークエラーメッセージを確認
   - **検証完了**: T045で手動確認済み
 
@@ -213,7 +218,7 @@
   - **📝 実装**: LoginForm.tsx で location.state?.from.pathname を使用してリダイレクト実装済み
 
 - [x] **T024** [US3] 手動検証: 保護されたルートへのアクセスをテスト ✅
-  - Cookie/セッションをクリア
+  - localStorage / sessionStorage の `accessToken` をクリア
   - http://localhost:5173/dashboard にアクセス → /login にリダイレクトされること
   - test@example.com / password123 でログイン → /dashboard に戻ること
   - **検証完了**: T045で手動確認済み
@@ -224,7 +229,7 @@
 
 ## Phase 6: User Story 4 - ログアウト (Priority: P2)
 
-**目的**: ログアウトボタンをクリックしてセッションを破棄し、ログイン画面に遷移
+**目的**: ログアウトボタンをクリックして保存済みトークンを破棄し、ログイン画面に遷移
 
 **独立テスト**: ログイン後にログアウトボタンをクリック → ログイン画面に遷移 → 保護されたページにアクセスできないこと
 
@@ -232,10 +237,10 @@
 
 - [x] **T025** [P] [US4] `LogoutButton` コンポーネントを `src/presentations/components/LogoutButton/LogoutButton.tsx` に作成 ✅
 
-  - `useAuth` フックでログアウトミューテーションを使用 ✅
+  - `useAuth` フックでログアウトミューテーションを使用（クライアント側でトークンを破棄） ✅
   - MUIの `Button` を `variant="outlined"` で使用 ✅
   - ログアウト中は `CircularProgress` を表示 ✅
-  - ログアウト成功後に `/login` に遷移 ✅
+  - ログアウト成功後に `/login` に遷移（保存済みトークン破棄 + キャッシュクリア） ✅
   - `src/presentations/components/LogoutButton/__tests__/LogoutButton.test.tsx` にコンポーネントテストを追加 ✅
   - **📝 実装**: `src/presentations/layouts/AppLayout/components/AppHeader/components/UserMenu.tsx` にログアウト機能として実装済み
 
@@ -249,7 +254,7 @@
 - [x] **T027** [US4] 手動検証: ログアウトフローをテスト ✅
   - test@example.com / password123 でログイン
   - ログアウトボタンをクリック → /login にリダイレクトされること
-  - /dashboard にアクセスを試みる → /login にリダイレクトされること（セッションがクリアされている）
+  - /dashboard にアクセスを試みる → /login にリダイレクトされること（保存済みトークンがクリアされている）
   - **検証完了**: T045で手動確認済み
 
 **チェックポイント**: User Story 4完了 - ログアウト機能が動作 ✅
@@ -258,9 +263,9 @@
 
 ## Phase 7: User Story 5 - ログイン状態の維持（Remember Me） (Priority: P3)
 
-**目的**: "ログイン状態を保持"チェックボックスを選択してログインすると、ブラウザ再起動後もセッションが維持される
+**目的**: "ログイン状態を保持"チェックボックスを選択してログインすると、JWT が localStorage に保存され、ブラウザ再起動後も認証状態が維持される
 
-**独立テスト**: Remember Meをチェックしてログイン → ブラウザを閉じて再起動 → セッションが維持されていること
+**独立テスト**: Remember Meをチェックしてログイン → ブラウザを閉じて再起動 → 認証状態が維持されていること
 
 ### User Story 5の実装
 
@@ -270,16 +275,16 @@
   - フォームデータに `rememberMe: boolean` フィールドが含まれることを確認 ✅
   - **📝 実装**: LoginForm.tsx で rememberMe フィールド実装済み
 
-- [x] **T029** [US5] `rememberMe` がAPIに送信されることを確認 ✅
+- [x] **T029** [US5] `rememberMe` がトークンの保存先切り替えに反映されることを確認 ✅
 
-  - `LoginRequest` に `rememberMe` パラメータが含まれることを確認 ✅
-  - `rememberMe=true` の場合、バックエンドでCookieの有効期限が長期に設定されるべき ✅
-  - **📝 実装**: loginCredentialsSchema に rememberMe フィールドが含まれ、API送信される
+  - `rememberMe` はサーバーには送信されず、クライアント側でトークンの保存先を決定する ✅
+  - `rememberMe=true` の場合は `localStorage`、`false` の場合は `sessionStorage` に保存される ✅
+  - **📝 実装**: `loginCredentialsSchema` に rememberMe フィールドが含まれ、`setAccessToken(token, rememberMe)`（`src/adapters/authToken.ts`）で保存先を切り替える
 
 - [x] **T030** [US5] 手動検証: Remember Me機能をテスト ✅
-  - Remember Meをチェックしてログイン → Cookie `Max-Age` が長期であることを確認
+  - Remember Meをチェックしてログイン → `localStorage` に `accessToken` が保存されることを確認
   - ブラウザを閉じて再起動 → / にアクセス → 認証状態が維持されていること
-  - Remember Meなしでログイン → ブラウザを閉じる → 再度ログインが必要なこと
+  - Remember Meなしでログイン → `sessionStorage` に保存され、タブを閉じると再度ログインが必要なこと
   - **検証完了**: T045で手動確認済み
 
 **チェックポイント**: User Story 5完了 - Remember Me機能が動作 ✅
@@ -295,11 +300,11 @@
 - [x] **T031** [P] [E2E] `LoginPage` Page Objectを `playwright/tests/pages/LoginPage.ts` に作成 ✅
 
   - `BasePage` を継承 ✅
-  - メソッド: `goto()`, `login(userId, password)`, `checkRememberMe()`, `getErrorMessage()` ✅
+  - メソッド: `goto()`, `login(email, password)`, `checkRememberMe()`, `getErrorMessage()` ✅
 
 - [x] **T032** [P] [E2E] テストユーザーフィクスチャを `playwright/tests/fixtures/testUsers.ts` に作成 ✅
   - 有効なユーザー: `{ email: 'test@example.com', password: 'password123' }` ✅
-  - 無効なユーザー: `{ email: 'invalid@example.com', password: 'wrongpass' }` ✅
+  - 無効なユーザー: `{ email: 'invalid@example.com', password: 'wrong_password' }` ✅
   - **📝 実装**: validUser のみ実装済み（invalidUser未追加）
 
 ### E2Eテスト実装
@@ -317,7 +322,7 @@
 
 - [x] **T035** [P] [E2E] ログアウトE2Eテストを `playwright/tests/specs/login/logout.spec.ts` に作成 ✅
 
-  - テスト: US4 - ログアウトでセッションをクリアしてログインにリダイレクト ✅
+  - テスト: US4 - ログアウトで保存済みトークンをクリアしてログインにリダイレクト ✅
   - テスト: US4 - ログアウト後、保護されたページは再認証が必要 ✅
 
 - [x] **T036** [E2E] E2Eテストスイートを実行してすべてのテストが合格することを確認 ✅
