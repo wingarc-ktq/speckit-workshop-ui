@@ -41,8 +41,8 @@ spec.mdを読み解き、Figma MakeでUIデザインを作成する。
 
 ```bash
 # リポジトリのクローンと依存関係のインストール
-git clone git@github.com:wingarc-ktq/speckit-workshop.git
-cd speckit-workshop
+git clone git@github.com:wingarc-ktq/speckit-workshop-ui.git
+cd speckit-workshop-ui
 pnpm install
 pnpm test:e2e:install
 cp .env.sample .env

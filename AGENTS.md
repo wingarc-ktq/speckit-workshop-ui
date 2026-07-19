@@ -1,4 +1,4 @@
-# speckit-workshop
+# speckit-workshop-ui
 
 ## Active Technologies
 

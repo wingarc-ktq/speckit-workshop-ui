@@ -1,5 +1,5 @@
 {
-  "name": "speckit-workshop",
+  "name": "speckit-workshop-ui",
   "private": false,
   "version": "1.0.0",
   "description": "Modern React + TypeScript + Material-UI web application with authentication, internationalization, testing, and Figma MCP integration",
@@ -24,11 +24,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/wingarc-ktq/speckit-workshop.git"
+    "url": "https://github.com/wingarc-ktq/speckit-workshop-ui.git"
   },
-  "homepage": "https://github.com/wingarc-ktq/speckit-workshop#readme",
+  "homepage": "https://github.com/wingarc-ktq/speckit-workshop-ui#readme",
   "bugs": {
-    "url": "https://github.com/wingarc-ktq/speckit-workshop/issues"
+    "url": "https://github.com/wingarc-ktq/speckit-workshop-ui/issues"
   },
   "type": "module",
   "packageManager": "pnpm@10.12.4",
