@@ -7,12 +7,17 @@ test.describe('保護されたルート', () => {
   let loginPage: LoginPage;
   let dashboardPage: DashboardPage;
 
-  test.beforeEach(async ({ page, context }) => {
+  test.beforeEach(async ({ page }) => {
     loginPage = new LoginPage(page);
     dashboardPage = new DashboardPage(page);
 
-    // セッションをクリアしてテストを開始
-    await context.clearCookies();
+    // JWTはlocalStorage/sessionStorageに保存されるため、
+    // オリジンにアクセスしてからストレージをクリアし未認証状態にする
+    await loginPage.navigate();
+    await page.evaluate(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+    });
   });
 
   test('保護されたページへの直接アクセスでログインにリダイレクトされること', async ({
