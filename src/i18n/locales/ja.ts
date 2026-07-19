@@ -60,6 +60,21 @@ export const ja = {
       gatewayTimeout: 'サーバーが時間内に応答しませんでした。',
     },
   },
+  components: {
+    loadError: {
+      message: '読み込みに失敗しました',
+      reload: '再読み込み',
+    },
+    tagSelector: {
+      label: 'タグ',
+      placeholder: 'タグを選択...',
+      noOptions: '利用可能なタグがありません',
+      loading: '読み込み中...',
+      clear: 'クリア',
+      close: '閉じる',
+      open: '開く',
+    },
+  },
   homePage: {
     title: 'ダッシュボード',
     welcome: 'Dashboardへようこそ。こちらがメインのダッシュボードページです。',
@@ -73,9 +88,9 @@ export const ja = {
     title: 'ログイン',
     subtitle: 'アカウントにログインしてください',
     form: {
-      userId: 'メールアドレスまたはユーザー名',
+      email: 'メールアドレス',
       password: 'パスワード',
-      userIdPlaceholder: 'メールアドレスまたはユーザー名を入力',
+      emailPlaceholder: 'メールアドレスを入力',
       passwordPlaceholder: 'パスワードを入力',
       loginButton: 'ログイン',
       rememberMe: 'ログイン状態を記録する',
@@ -207,17 +222,6 @@ export const ja = {
         upgrade: 'アップグレード',
         usage: '{{used}} GB / {{total}} GB',
       },
-    },
-  },
-  components: {
-    tagSelector: {
-      label: 'タグ',
-      placeholder: 'タグを選択...',
-      noOptions: '利用可能なタグがありません',
-      loading: '読み込み中...',
-      clear: 'クリア',
-      close: '閉じる',
-      open: '開く',
     },
   },
 } as const;

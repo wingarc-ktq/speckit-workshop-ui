@@ -8,8 +8,8 @@ import { useTranslation } from 'react-i18next';
 
 import type { ApplicationException } from '@/domain/errors';
 import { tKeys } from '@/i18n';
+import { useErrorMessage } from '@/presentations/hooks';
 
-import { useErrorMessage } from './hooks';
 import * as S from './styled';
 
 interface AppErrorDialogProps {

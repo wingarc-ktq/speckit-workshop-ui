@@ -3,6 +3,7 @@ import React, { Suspense } from 'react';
 import { QueryErrorResetBoundary } from '@tanstack/react-query';
 import { ErrorBoundary } from 'react-error-boundary';
 
+import { ApplicationException } from '@/domain/errors';
 import { AppErrorDialog } from '@/presentations/components';
 
 interface PageWrapperProps {
@@ -32,9 +33,15 @@ export const PageWrapper: React.FC<PageWrapperProps> = ({ children }) => {
       {({ reset }) => (
         <ErrorBoundary
           onReset={reset}
-          fallbackRender={({ error, resetErrorBoundary }) => (
-            <AppErrorDialog error={error} onClose={resetErrorBoundary} />
-          )}
+          fallbackRender={({ error, resetErrorBoundary }) => {
+            // ApplicationException 以外は想定外エラーのため再スローし、
+            // Route の errorElement (RouteErrorBoundary) 経由で CrashPage に遷移させる
+            if (!(error instanceof ApplicationException)) throw error;
+
+            return (
+              <AppErrorDialog error={error} onClose={resetErrorBoundary} />
+            );
+          }}
         >
           <Suspense>{children}</Suspense>
         </ErrorBoundary>

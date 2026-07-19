@@ -1,4 +1,4 @@
-/// <reference types="vitest" />
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'node:url';
@@ -11,21 +11,24 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  server: {
+    // 単一オリジン（/api/v1）を各バックエンドサービスへ振り分ける（開発用ゲートウェイ）
+    // 本番は nginx / API Gateway 側で同等のルーティングを行う
+    proxy: {
+      '/api/v1/auth': { target: 'http://localhost:8081', changeOrigin: true },
+      '/api/v1/files': { target: 'http://localhost:8082', changeOrigin: true },
+      '/api/v1/tags': { target: 'http://localhost:8082', changeOrigin: true },
+    },
+  },
   test: {
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
     pool: 'threads',
-    poolOptions: {
-      threads: {
-        singleThread: false,
-        minThreads: 1,
-        maxThreads: 4,
-      },
-    },
+    maxWorkers: 4,
     mockReset: true,
     css: true,
-    exclude: ['**/node_modules/**', '**/playwright/**'],
+    exclude: ['**/node_modules/**', '**/playwright/**', '**/.claude/**'],
     server: {
       deps: {
         inline: ['@mui/x-data-grid'],

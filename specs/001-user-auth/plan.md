@@ -5,7 +5,7 @@
 
 ## Summary
 
-ユーザー認証とログイン機能の実装。セッションベース認証を使用し、ログイン画面からの認証、保護されたページへのアクセス制御、ログアウト、Remember Me機能を提供します。既存のOpenAPI仕様（`schema/auth/openapi.yaml`）を使用し、Figmaデザイン（`/login`画面）に基づいたUIを実装します。
+ユーザー認証とログイン機能の実装。JWT（Bearer）ベース認証を使用し、ログイン画面からの認証、保護されたページへのアクセス制御、ログアウト、Remember Me機能を提供します。既存のOpenAPI仕様（`schema/auth/openapi.yaml`）を使用し、Figmaデザイン（`/login`画面）に基づいたUIを実装します。
 
 **技術アプローチ**:
 
@@ -13,7 +13,11 @@
 - OpenAPI仕様から自動生成されたAPI clientを使用
 - MSWでAPIモックを作成してテスト環境を構築
 - React Router v7のProtectedRouteパターンで認証制御
-- セッション状態管理にTanStack Query使用
+- 認証状態管理にTanStack Query使用（認証状態の確認は `/auth/me`）
+- JWT アクセストークンは Remember Me の選択に応じて localStorage / sessionStorage に保存
+- Axios リクエストインターセプターで `Authorization: Bearer <token>` を付与
+- ログアウトはクライアント側でトークン破棄 + クエリキャッシュのクリア
+- 単一の `/api/v1` オリジン経由で auth（:8081）/ files（:8082）にルーティング（開発時は Vite dev proxy、本番はゲートウェイ）
 
 ## Technical Context
 
@@ -25,12 +29,12 @@
 - Material-UI v6+ (UIコンポーネントライブラリ)
 - React Router v7 (ルーティング・保護されたルート)
 - TanStack Query v5 (サーバー状態管理)
-- Axios (HTTPクライアント、Cookie自動送信)
+- Axios (HTTPクライアント、リクエストインターセプターで Bearer トークン付与)
 - React Hook Form + Zod (フォーム管理・バリデーション)
 - Orval (OpenAPIからTypeScriptコード生成)
 - MSW (Mock Service Worker - APIモック)
 
-**Storage**: ブラウザCookie（セッションID、HttpOnly）  
+**Storage**: ブラウザの localStorage / sessionStorage（JWT アクセストークン、Remember Me により保存先を切替）  
 **Testing**:
 
 - Vitest + React Testing Library (単体テスト・コンポーネントテスト)
@@ -47,14 +51,14 @@
 
 **Constraints**:
 
-- セキュリティ: HttpOnly Cookie、CSRF保護（バックエンド実装）
+- セキュリティ: JWT（Bearer）認証、トークンの署名・検証・有効期限管理はバックエンドで担保
 - アクセシビリティ: WCAG 2.1 AA準拠
 - レスポンシブ対応: モバイル（360px〜）、タブレット、デスクトップ
 
 **Scale/Scope**:
 
 - 想定ユーザー数: 1,000人規模
-- 同時接続: 100セッション程度
+- 同時接続: 100接続程度
 - 画面数: 1画面（ログイン）+ 認証フロー改修
 
 ## Constitution Check
@@ -134,8 +138,8 @@ src/
 ├── domain/                          # ドメイン層
 │   ├── models/
 │   │   └── auth/
-│   │       ├── User.ts              # ユーザーモデル
-│   │       ├── Session.ts           # セッションモデル
+│   │       ├── User.ts              # ユーザーモデル（{ id, email, name }）
+│   │       ├── AuthToken.ts         # JWT トークン保存モデル（localStorage/sessionStorage）
 │   │       └── LoginForm.ts         # ログインフォームモデル
 │   ├── errors/
 │   │   └── AuthException.ts         # 認証エラー（既存WebApiException拡張）
@@ -191,7 +195,7 @@ src/
 │   │       │   └── __tests__/
 │   │       │       └── LoginForm.test.tsx
 │   │       └── RememberMeCheckbox/
-│   │           ├── RememberMeCheckbox.tsx  # Remember Meチェックボックス
+│   │           ├── RememberMeCheckbox.tsx  # トークン保存先切替（localStorage/sessionStorage）チェックボックス
 │   │           ├── index.ts
 │   │           └── __tests__/
 │   │               └── RememberMeCheckbox.test.tsx
@@ -247,15 +251,15 @@ schema/
 ### ✅ Phase 1: Supporting Artifacts (完了)
 
 - ✅ Data model defined (`data-model.md`)
-  - 6 entities documented (User, Session, LoginFormData, LoginRequest, LoginResponse, AuthError)
+  - 6 entities documented (User, LoginFormData, LoginRequest, LoginResponse, UserResponse, RegisterRequest, AuthError)
   - TypeScript interfaces with Zod schemas
   - Entity relationships and data flows
   - Validation rules and security considerations
 - ✅ API contracts documented (`contracts/openapi-ref.md`)
-  - 3 endpoints detailed (POST /login, POST /logout, GET /session)
+  - 3 endpoints detailed (POST /auth/login, GET /auth/me, POST /auth/register)
   - Error handling specifications
   - MSW mock handler examples
-  - Security considerations (Cookie attributes, CSRF)
+  - Security considerations (JWT / Bearer token)
 - ✅ Quickstart guide created (`quickstart.md`)
   - Step-by-step implementation guide
   - 40+ files to implement across 7 phases

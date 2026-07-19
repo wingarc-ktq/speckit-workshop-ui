@@ -1,6 +1,6 @@
 import '@/adapters/axios';
 
-import { getSession as getSessionApi } from '@/adapters/generated/auth';
+import { getCurrentUser as getCurrentUserApi } from '@/adapters/generated/auth';
 import type { AuthSession } from '@/domain/models/auth';
 
 import { handleSessionError } from './utils/authErrorHandler';
@@ -8,25 +8,20 @@ import { handleSessionError } from './utils/authErrorHandler';
 export type GetCurrentSession = () => Promise<AuthSession>;
 
 /**
- * 現在のセッション情報を取得
- * @returns セッション情報
+ * 現在の認証ユーザー情報を取得（JWT検証: GET /auth/me）
+ * @returns 認証セッション
  * @throws {AuthException} 認証エラー時
  */
 export const getCurrentSession: GetCurrentSession =
   async (): Promise<AuthSession> => {
     try {
-      const data = await getSessionApi();
+      const { user } = await getCurrentUserApi();
 
       return {
         user: {
-          id: data.user.id,
-          username: data.user.username,
-          email: data.user.email,
-          fullName: data.user.fullName ?? null,
-        },
-        sessionInfo: {
-          expiresAt: new Date(data.sessionInfo.expiresAt),
-          csrfToken: data.sessionInfo.csrfToken,
+          id: user.id,
+          email: user.email,
+          name: user.name,
         },
       };
     } catch (error) {

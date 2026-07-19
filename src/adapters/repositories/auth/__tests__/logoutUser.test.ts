@@ -1,58 +1,32 @@
-import { mockLogoutResponse } from '@/__fixtures__/auth';
-import { customInstance } from '@/adapters/axios';
-import { AuthException, WebApiException } from '@/domain/errors';
+import { getAccessToken, setAccessToken } from '@/adapters/authToken';
 
 import { logoutUser } from '../logoutUser';
 
-vi.mock('@/adapters/axios');
-const mocked = vi.mocked(customInstance);
-
 describe('logoutUser', () => {
-  describe('正常系', () => {
-    test.concurrent(
-      '正常なレスポンスの場合、適切にLogoutResultに変換される',
-      async () => {
-        mocked.mockResolvedValue(mockLogoutResponse);
-
-        const result = await logoutUser();
-
-        expect(result).toEqual({
-          message: mockLogoutResponse.message,
-        });
-      }
-    );
-
-    test.concurrent('カスタムメッセージでも正常に処理される', async () => {
-      const customResponse = {
-        message: 'セッションが正常に終了されました',
-      };
-      mocked.mockResolvedValue(customResponse);
-
-      const result = await logoutUser();
-
-      expect(result.message).toBe(customResponse.message);
-    });
-
-    test.concurrent('空文字メッセージでも正常に処理される', async () => {
-      const emptyMessageResponse = {
-        message: '',
-      };
-      mocked.mockResolvedValue(emptyMessageResponse);
-
-      const result = await logoutUser();
-
-      expect(result.message).toBe('');
-    });
+  beforeEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
   });
 
-  describe('異常系', () => {
-    test.concurrent('401エラーでAuthExceptionがthrowされる', async () => {
-      const unauthorizedError = new WebApiException(401, 'Unauthorized', {
-        message: 'Session expired',
-      });
-      mocked.mockRejectedValue(unauthorizedError);
+  test('localStorage に保存済みのアクセストークンが破棄される', async () => {
+    setAccessToken('dummy-token', true);
+    expect(getAccessToken()).toBe('dummy-token');
 
-      await expect(logoutUser()).rejects.toThrow(AuthException);
-    });
+    await logoutUser();
+
+    expect(getAccessToken()).toBeNull();
+  });
+
+  test('sessionStorage に保存済みのアクセストークンが破棄される', async () => {
+    setAccessToken('dummy-token', false);
+    expect(getAccessToken()).toBe('dummy-token');
+
+    await logoutUser();
+
+    expect(getAccessToken()).toBeNull();
+  });
+
+  test('トークンが存在しない状態でもエラーにならない', async () => {
+    await expect(logoutUser()).resolves.toBeUndefined();
   });
 });

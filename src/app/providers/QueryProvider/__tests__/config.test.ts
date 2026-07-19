@@ -142,7 +142,8 @@ describe('queryClient configuration', () => {
           unauthorizedError,
           null,
           undefined,
-          {} as never // Mutation型の代わりにダミーオブジェクト
+          {} as never, // Mutation型の代わりにダミーオブジェクト
+          {} as never // MutationFunctionContext型の代わりにダミーオブジェクト
         );
       }
 
@@ -160,7 +161,8 @@ describe('queryClient configuration', () => {
           serviceUnavailableError,
           null,
           undefined,
-          {} as never // Mutation型の代わりにダミーオブジェクト
+          {} as never, // Mutation型の代わりにダミーオブジェクト
+          {} as never // MutationFunctionContext型の代わりにダミーオブジェクト
         );
       }
 

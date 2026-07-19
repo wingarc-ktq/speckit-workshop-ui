@@ -57,6 +57,21 @@ export const en = {
       gatewayTimeout: 'The server did not respond in time.',
     },
   },
+  components: {
+    loadError: {
+      message: 'Failed to load.',
+      reload: 'Reload',
+    },
+    tagSelector: {
+      label: 'Tags',
+      placeholder: 'Select tags...',
+      noOptions: 'No tags available',
+      loading: 'Loading...',
+      clear: 'Clear',
+      close: 'Close',
+      open: 'Open',
+    },
+  },
   homePage: {
     title: 'Dashboard',
     welcome: 'Welcome to Admin Dashboard. This is the main dashboard page.',
@@ -69,9 +84,9 @@ export const en = {
     title: 'Login',
     subtitle: 'Please sign in to your account',
     form: {
-      userId: 'Email Address or Username',
+      email: 'Email Address',
       password: 'Password',
-      userIdPlaceholder: 'Enter your email or username',
+      emailPlaceholder: 'Enter your email address',
       passwordPlaceholder: 'Enter your password',
       loginButton: 'Login',
       rememberMe: 'Remember me',
@@ -201,17 +216,6 @@ export const en = {
         upgrade: 'Upgrade',
         usage: '{{used}} GB of {{total}} GB',
       },
-    },
-  },
-  components: {
-    tagSelector: {
-      label: 'Tags',
-      placeholder: 'Select tags...',
-      noOptions: 'No tags available',
-      loading: 'Loading...',
-      clear: 'Clear',
-      close: 'Close',
-      open: 'Open',
     },
   },
 } as const;

@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { ErrorBoundary } from 'react-error-boundary';
 
 import { HTTP_STATUS_CLIENT_ERROR } from '@/domain/constants';
 import { WebApiException } from '@/domain/errors';
@@ -25,7 +26,7 @@ const TestComponent: React.FC = () => {
   return <div data-testid="test-content">Test Content</div>;
 };
 
-const TestComponentWithSuspenseQuery: React.FC<{ error?: WebApiException }> = ({
+const TestComponentWithSuspenseQuery: React.FC<{ error?: Error }> = ({
   error,
 }) => {
   useSuspenseQuery({
@@ -119,6 +120,28 @@ describe('PageWrapper', () => {
       await waitFor(() => {
         expect(screen.getByTestId('appErrorDialog')).toBeInTheDocument();
       });
+    });
+
+    test('ApplicationException以外のエラーの場合、再スローされ上位のErrorBoundaryで捕捉されること', async () => {
+      const unexpectedError = new Error('unexpected');
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <ErrorBoundary
+            fallbackRender={() => <div data-testid="outerErrorBoundary" />}
+          >
+            <PageWrapper>
+              <TestComponentWithSuspenseQuery error={unexpectedError} />
+            </PageWrapper>
+          </ErrorBoundary>
+        </QueryClientProvider>
+      );
+
+      // AppErrorDialogは表示されず、上位のErrorBoundaryが捕捉する
+      await waitFor(() => {
+        expect(screen.getByTestId('outerErrorBoundary')).toBeInTheDocument();
+      });
+      expect(screen.queryByTestId('appErrorDialog')).not.toBeInTheDocument();
     });
   });
 });
