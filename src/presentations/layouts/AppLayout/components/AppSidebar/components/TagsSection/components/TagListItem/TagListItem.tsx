@@ -32,7 +32,7 @@ export const TagListItem: React.FC<TagListItemProps> = ({
           primary={name}
           slotProps={{
             primary: {
-              fontWeight: selected ? 'bold' : 'normal',
+              sx: { fontWeight: selected ? 'bold' : 'normal' },
             },
           }}
         />

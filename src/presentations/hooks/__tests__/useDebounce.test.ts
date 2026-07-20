@@ -151,7 +151,7 @@ describe('useDebounce', () => {
 
   describe('クリーンアップ', () => {
     test('アンマウント時にタイマーがクリアされること', () => {
-      const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
+      const clearTimeoutSpy = vi.spyOn(globalThis, 'clearTimeout');
 
       const { rerender, unmount } = renderHook(
         ({ value, delay }) => useDebounce(value, delay),
@@ -171,7 +171,7 @@ describe('useDebounce', () => {
     });
 
     test('値変更時に前のタイマーがクリアされること', () => {
-      const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
+      const clearTimeoutSpy = vi.spyOn(globalThis, 'clearTimeout');
 
       const { rerender } = renderHook(
         ({ value, delay }) => useDebounce(value, delay),

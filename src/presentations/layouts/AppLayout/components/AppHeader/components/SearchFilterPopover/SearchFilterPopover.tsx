@@ -84,7 +84,7 @@ export const SearchFilterPopover: React.FC<SearchFilterPopoverProps> = ({
       }}
     >
       <Stack spacing={2}>
-        <Typography variant="subtitle1" fontWeight="bold">
+        <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
           {t(tKeys.layouts.appHeader.filterPopover.title)}
         </Typography>
 
@@ -108,7 +108,7 @@ export const SearchFilterPopover: React.FC<SearchFilterPopoverProps> = ({
           onChange={handleTagChange}
           size="small"
         />
-        <Box display="flex" justifyContent="space-between" gap={1}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
           <Button onClick={handleClear} variant="outlined" size="small">
             {t(tKeys.layouts.appHeader.filterPopover.clear)}
           </Button>

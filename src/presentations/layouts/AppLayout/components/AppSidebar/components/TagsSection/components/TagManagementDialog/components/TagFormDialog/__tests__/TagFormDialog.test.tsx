@@ -175,10 +175,13 @@ describe('TagFormDialog', () => {
         await user.click(submitButton);
 
         await waitFor(() => {
-          expect(createTag).toHaveBeenCalledWith({
-            name: 'New Tag',
-            color: TagColor.RED,
-          });
+          expect(createTag).toHaveBeenCalledWith(
+            {
+              name: 'New Tag',
+              color: TagColor.RED,
+            },
+            expect.anything()
+          );
         });
 
         await waitFor(() => {
@@ -238,10 +241,13 @@ describe('TagFormDialog', () => {
         await user.click(submitButton);
 
         await waitFor(() => {
-          expect(createTag).toHaveBeenCalledWith({
-            name: exactLengthName,
-            color: TagColor.BLUE, // デフォルト色
-          });
+          expect(createTag).toHaveBeenCalledWith(
+            {
+              name: exactLengthName,
+              color: TagColor.BLUE, // デフォルト色
+            },
+            expect.anything()
+          );
         });
       });
     });

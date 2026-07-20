@@ -46,8 +46,8 @@ export const TagChips = ({
     <Stack
       direction="row"
       spacing={0.5}
-      flexWrap="wrap"
       useFlexGap
+      sx={{ flexWrap: 'wrap' }}
       data-testid={dataTestId}
     >
       {displayTags.map((tag) => (

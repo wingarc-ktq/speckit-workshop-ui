@@ -119,8 +119,12 @@ describe('MyFilesSection', () => {
       await renderMyFilesSection();
 
       // ページサイズのドロップダウンを開く
+      // MUI DataGrid v9 では rows-per-page セレクトがモバイルファーストで
+      // display:none となり、sm 以上のメディアクエリでのみ表示される。
+      // jsdom はメディアクエリを評価しないため hidden: true で取得する。
       const pageSizeButton = screen.getByRole('combobox', {
         name: /rows per page/i,
+        hidden: true,
       });
       await user.click(pageSizeButton);
 
@@ -140,8 +144,12 @@ describe('MyFilesSection', () => {
       expect(screen.getByText(/1–5 of 5/)).toBeInTheDocument();
 
       // ページサイズを5に変更
+      // MUI DataGrid v9 では rows-per-page セレクトがモバイルファーストで
+      // display:none となり、sm 以上のメディアクエリでのみ表示される。
+      // jsdom はメディアクエリを評価しないため hidden: true で取得する。
       const pageSizeButton = screen.getByRole('combobox', {
         name: /rows per page/i,
+        hidden: true,
       });
       await user.click(pageSizeButton);
 
@@ -243,8 +251,12 @@ describe('MyFilesSection', () => {
       });
 
       // ページサイズを変更
+      // MUI DataGrid v9 では rows-per-page セレクトがモバイルファーストで
+      // display:none となり、sm 以上のメディアクエリでのみ表示される。
+      // jsdom はメディアクエリを評価しないため hidden: true で取得する。
       const pageSizeButton = screen.getByRole('combobox', {
         name: /rows per page/i,
+        hidden: true,
       });
       await user.click(pageSizeButton);
 

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import HistoryIcon from '@mui/icons-material/History';
 import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
 import ShareIcon from '@mui/icons-material/Share';

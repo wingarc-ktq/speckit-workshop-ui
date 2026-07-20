@@ -201,7 +201,7 @@ describe('UploadSection', () => {
       await drop([file]);
 
       await waitFor(() => {
-        expect(uploadFile).toHaveBeenCalledWith({ file });
+        expect(uploadFile).toHaveBeenCalledWith({ file }, expect.anything());
       });
     });
 

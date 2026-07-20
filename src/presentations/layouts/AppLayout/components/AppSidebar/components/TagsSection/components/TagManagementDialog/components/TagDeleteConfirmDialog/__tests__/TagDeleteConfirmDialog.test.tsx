@@ -159,7 +159,7 @@ describe('TagDeleteConfirmDialog', () => {
       await user.click(confirmButton);
 
       await waitFor(() => {
-        expect(deleteTag).toHaveBeenCalledWith(mockTag.id);
+        expect(deleteTag).toHaveBeenCalledWith(mockTag.id, expect.anything());
       });
 
       await waitFor(() => {
@@ -252,7 +252,7 @@ describe('TagDeleteConfirmDialog', () => {
       await user.click(confirmButton);
 
       await waitFor(() => {
-        expect(deleteTag).toHaveBeenCalledWith(mockTag.id);
+        expect(deleteTag).toHaveBeenCalledWith(mockTag.id, expect.anything());
       });
 
       // エラーが発生してもダイアログは開いたまま
@@ -284,7 +284,7 @@ describe('TagDeleteConfirmDialog', () => {
       await user.click(confirmButton);
 
       await waitFor(() => {
-        expect(deleteTag).toHaveBeenCalledWith(mockTag.id);
+        expect(deleteTag).toHaveBeenCalledWith(mockTag.id, expect.anything());
       });
 
       // エラーが発生してもダイアログは開いたまま

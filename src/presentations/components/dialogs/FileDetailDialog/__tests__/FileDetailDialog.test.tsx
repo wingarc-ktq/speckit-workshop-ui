@@ -22,8 +22,8 @@ const mockCreateObjectURL = vi.fn<(object: Blob | MediaSource) => string>(
 );
 const mockRevokeObjectURL = vi.fn<(url: string) => void>();
 
-global.URL.createObjectURL = mockCreateObjectURL;
-global.URL.revokeObjectURL = mockRevokeObjectURL;
+globalThis.URL.createObjectURL = mockCreateObjectURL;
+globalThis.URL.revokeObjectURL = mockRevokeObjectURL;
 
 /**
  * document.createElement('a')のクリックイベントをモック化
@@ -361,7 +361,7 @@ describe('FileDetailDialog', () => {
       renderDialog({ fileId: 'file-001' });
 
       await waitFor(() => {
-        expect(downloadFile).toHaveBeenCalledWith('file-001');
+        expect(downloadFile).toHaveBeenCalledWith('file-001', expect.anything());
       });
     });
 
@@ -521,7 +521,7 @@ describe('FileDetailDialog', () => {
       await user.click(downloadButton);
 
       await waitFor(() => {
-        expect(downloadFile).toHaveBeenCalledWith('file-001');
+        expect(downloadFile).toHaveBeenCalledWith('file-001', expect.anything());
       });
 
       // クリーンアップ
