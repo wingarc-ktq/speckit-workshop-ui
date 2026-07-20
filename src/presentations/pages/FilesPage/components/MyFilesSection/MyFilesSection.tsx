@@ -10,10 +10,10 @@ import type {
   FileQueryParams,
 } from '@/domain/models/file';
 import { tKeys } from '@/i18n/tKeys';
-import { FileDetailDialog } from '@/presentations/components';
+import { FileDetailDialog, QueryBoundary } from '@/presentations/components';
 import { useFiles } from '@/presentations/hooks/queries/files/useFiles';
 
-import { EmptySearchResult, FileListTable } from './components';
+import { EmptySearchResult, FileListTable, MyFilesSkeleton } from './components';
 import * as S from './styled';
 
 import type { GridPaginationModel } from '@mui/x-data-grid';
@@ -27,6 +27,29 @@ export const MyFilesSection: React.FC<MyFilesSectionProps> = ({
   searchQuery,
   tagIds,
 }) => {
+  return (
+    <QueryBoundary
+      skeleton={<MyFilesSkeleton />}
+      resetKeys={[searchQuery ?? '', tagIds?.join(',') ?? '']}
+    >
+      <MyFilesContent searchQuery={searchQuery} tagIds={tagIds} />
+    </QueryBoundary>
+  );
+};
+
+/**
+ * MyFilesSection のデータ取得を担う内部コンテナ。
+ *
+ * @remarks
+ * useFiles でのファイル取得（Suspense）と、ページネーション・選択・詳細ダイアログの
+ * 状態を保持する。ローディング・エラーは呼び出し側の QueryBoundary が扱う。
+ * 一括ダウンロードは選択ファイルの downloadUrl を必要とするため、データを持つ
+ * この内部コンテナ側で扱う。
+ */
+const MyFilesContent: React.FC<MyFilesSectionProps> = ({
+  searchQuery,
+  tagIds,
+}) => {
   const { t } = useTranslation();
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
@@ -34,7 +57,6 @@ export const MyFilesSection: React.FC<MyFilesSectionProps> = ({
   });
   const [selectedFileIds, setSelectedFileIds] = useState<string[]>([]);
   const [selectedFileId, setSelectedFileId] = useState<FileId | null>(null);
-  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
 
   // Convert MUI pagination model (0-based) to API params (1-based)
   const queryParams: FileQueryParams = {
@@ -55,11 +77,10 @@ export const MyFilesSection: React.FC<MyFilesSectionProps> = ({
 
   const handleRowClick = useCallback((file: DocumentFile) => {
     setSelectedFileId(file.id);
-    setIsDetailDialogOpen(true);
   }, []);
 
   const handleCloseDetailDialog = useCallback(() => {
-    setIsDetailDialogOpen(false);
+    setSelectedFileId(null);
   }, []);
 
   const handleBulkDownload = useCallback(async () => {
@@ -103,8 +124,8 @@ export const MyFilesSection: React.FC<MyFilesSectionProps> = ({
         <EmptySearchResult />
       ) : (
         <FileListTable
-          files={data.files ?? []}
-          total={data.total ?? 0}
+          files={data.files}
+          total={data.total}
           paginationModel={paginationModel}
           onPaginationModelChange={handlePaginationModelChange}
           selectedFileIds={selectedFileIds}
@@ -114,11 +135,12 @@ export const MyFilesSection: React.FC<MyFilesSectionProps> = ({
         />
       )}
 
-      <FileDetailDialog
-        fileId={selectedFileId}
-        open={isDetailDialogOpen}
-        onClose={handleCloseDetailDialog}
-      />
+      {selectedFileId !== null && (
+        <FileDetailDialog
+          fileId={selectedFileId}
+          onClose={handleCloseDetailDialog}
+        />
+      )}
     </S.Container>
   );
 };

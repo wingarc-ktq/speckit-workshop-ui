@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 
 import { filterMockFilesBySearch } from '@/__fixtures__/files';
 import { mockTags } from '@/__fixtures__/tags';
+import { deferMock } from '@/__fixtures__/testUtils';
 import { RepositoryTestWrapper } from '@/__fixtures__/testWrappers';
 import { i18n } from '@/i18n/config';
 
@@ -33,8 +34,9 @@ describe('MyFilesSection', () => {
         </RepositoryTestWrapper>
       </MemoryRouter>
     );
+    // QueryBoundary のスケルトンが消える（データ取得が完了する）まで待つ
     await waitFor(() =>
-      expect(r.queryByTestId('suspense')).not.toBeInTheDocument()
+      expect(r.queryByTestId('myFilesSkeleton')).not.toBeInTheDocument()
     );
     return r;
   };
@@ -381,6 +383,36 @@ describe('MyFilesSection', () => {
       await waitFor(() => {
         expect(screen.getByRole('grid')).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('ローディング表示（QueryBoundary）', () => {
+    test('取得中はスケルトンを表示し、完了後に実データへ切り替わること', async () => {
+      // getFiles を保留状態にして、取得中→完了の遷移を制御する
+      const resolve = deferMock(getFiles, filterMockFilesBySearch(undefined));
+
+      render(
+        <MemoryRouter>
+          <RepositoryTestWrapper
+            override={{
+              files: { getFiles, getFileById },
+              tags: { getTags },
+            }}
+          >
+            <MyFilesSection />
+          </RepositoryTestWrapper>
+        </MemoryRouter>
+      );
+
+      // 取得中はスケルトンが表示され、実データ（テーブル）はまだ無い
+      expect(screen.getByTestId('myFilesSkeleton')).toBeInTheDocument();
+      expect(screen.queryByRole('grid')).not.toBeInTheDocument();
+
+      // 取得完了 → 実データに切り替わり、スケルトンは消える
+      resolve();
+
+      expect(await screen.findByText('document.pdf')).toBeInTheDocument();
+      expect(screen.queryByTestId('myFilesSkeleton')).not.toBeInTheDocument();
     });
   });
 });

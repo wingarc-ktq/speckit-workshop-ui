@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 
 import { mockFile } from '@/__fixtures__/files';
 import { mockTags } from '@/__fixtures__/tags';
+import { deferMock } from '@/__fixtures__/testUtils';
 import { RepositoryTestWrapper } from '@/__fixtures__/testWrappers';
 import type { UpdateFileRequest } from '@/domain/models/file';
 import { i18n } from '@/i18n/config';
@@ -29,7 +30,6 @@ describe('FileEditDialog', () => {
   ) => {
     const defaultProps = {
       fileId: mockFile.id,
-      open: true,
       onClose,
     };
 
@@ -50,9 +50,11 @@ describe('FileEditDialog', () => {
       </RepositoryTestWrapper>
     );
 
-    // Suspenseの解決を待つ
+    // QueryBoundary のスケルトンが消える（ファイル取得が完了する）まで待つ
     await waitFor(() =>
-      expect(result.queryByTestId('suspense')).not.toBeInTheDocument()
+      expect(
+        result.queryByTestId('fileEditDialogSkeleton')
+      ).not.toBeInTheDocument()
     );
 
     return result;
@@ -125,18 +127,6 @@ describe('FileEditDialog', () => {
         '説明'
       ) as HTMLInputElement;
       expect(descriptionInput.value).toBe(mockFile.description);
-    });
-
-    test('ダイアログが閉じている時、コンテンツが表示されないこと', async () => {
-      await renderComponent({ open: false });
-
-      expect(screen.queryByText('ファイルを編集')).not.toBeInTheDocument();
-    });
-
-    test('fileIdがnullの時、コンテンツが表示されないこと', async () => {
-      await renderComponent({ fileId: null });
-
-      expect(screen.queryByText('ファイルを編集')).not.toBeInTheDocument();
     });
 
     test('保存ボタンにEditIconが表示されること', async () => {
@@ -503,6 +493,36 @@ describe('FileEditDialog', () => {
         expect(saveButton).not.toBeDisabled();
         expect(screen.getByText('500/500')).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('ローディング表示（QueryBoundary）', () => {
+    test('取得中はスケルトンを表示し、完了後に実データへ切り替わること', async () => {
+      // getFileById を保留状態にして、取得中→完了の遷移を制御する
+      const resolve = deferMock(getFileById, mockFile);
+
+      render(
+        <RepositoryTestWrapper
+          override={{
+            files: { getFileById, updateFile },
+            tags: { getTags },
+          }}
+        >
+          <FileEditDialog fileId={mockFile.id} onClose={onClose} />
+        </RepositoryTestWrapper>
+      );
+
+      // 取得中はスケルトンが表示され、フォーム（ファイル名入力）はまだ無い
+      expect(screen.getByTestId('fileEditDialogSkeleton')).toBeInTheDocument();
+      expect(screen.queryByLabelText(/ファイル名/)).not.toBeInTheDocument();
+
+      // 取得完了 → フォームに切り替わり、スケルトンは消える
+      resolve();
+
+      expect(await screen.findByLabelText(/ファイル名/)).toBeInTheDocument();
+      expect(
+        screen.queryByTestId('fileEditDialogSkeleton')
+      ).not.toBeInTheDocument();
     });
   });
 });

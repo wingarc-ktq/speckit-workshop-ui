@@ -1,0 +1,1 @@
+export { EmptyRecentFiles } from './EmptyRecentFiles';

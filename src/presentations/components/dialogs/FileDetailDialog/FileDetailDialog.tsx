@@ -9,11 +9,13 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
+import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import { useTranslation } from 'react-i18next';
 
 import type { FileId } from '@/domain/models/file';
 import { tKeys } from '@/i18n/tKeys';
+import { QueryBoundary } from '@/presentations/components/boundaries';
 import { useDownloadFile } from '@/presentations/hooks/queries/files/useDownloadFile';
 import { useFileById } from '@/presentations/hooks/queries/files/useFileById';
 import { useTags } from '@/presentations/hooks/queries/tags/useTags';
@@ -24,12 +26,51 @@ import { FilePreview } from './components/FilePreview';
 import * as S from './styled';
 
 interface FileDetailDialogProps {
-  fileId: FileId | null;
-  open: boolean;
+  /** 表示対象のファイルID。null 許容せず、開くときは必ず選択済みであること */
+  fileId: FileId;
   onClose: () => void;
 }
 
-const FileDetailDialogContent: React.FC<{
+export const FileDetailDialog: React.FC<FileDetailDialogProps> = ({
+  fileId,
+  onClose,
+}) => {
+  const { t } = useTranslation();
+
+  return (
+    <Dialog open onClose={onClose} maxWidth="md" fullWidth>
+      {/* タイトルと閉じるボタンは静的なため、境界の外で常に表示する */}
+      <DialogTitle>
+        <S.DialogTitleContainer>
+          <S.Title>{t(tKeys.filesPage.fileDetailDialog.title)}</S.Title>
+          <IconButton
+            edge="end"
+            color="inherit"
+            onClick={onClose}
+            aria-label={t(tKeys.filesPage.fileDetailDialog.close)}
+          >
+            <CloseIcon />
+          </IconButton>
+        </S.DialogTitleContainer>
+      </DialogTitle>
+      <QueryBoundary
+        skeleton={<FileDetailDialogBodySkeleton />}
+        resetKeys={[fileId]}
+      >
+        <FileDetailDialogBody fileId={fileId} onClose={onClose} />
+      </QueryBoundary>
+    </Dialog>
+  );
+};
+
+/**
+ * ファイル詳細のデータ依存部分（プレビュー・情報・アクション）。
+ *
+ * @remarks
+ * useFileById / useTags でのファイル取得（Suspense）を行う。ローディング・エラーは
+ * 呼び出し側の QueryBoundary が扱い、タイトル・閉じるボタンは境界の外で常に表示される。
+ */
+const FileDetailDialogBody: React.FC<{
   fileId: FileId;
   onClose: () => void;
 }> = ({ fileId, onClose }) => {
@@ -93,19 +134,6 @@ const FileDetailDialogContent: React.FC<{
 
   return (
     <>
-      <DialogTitle>
-        <S.DialogTitleContainer>
-          <S.Title>{t(tKeys.filesPage.fileDetailDialog.title)}</S.Title>
-          <IconButton
-            edge="end"
-            color="inherit"
-            onClick={onClose}
-            aria-label={t(tKeys.filesPage.fileDetailDialog.close)}
-          >
-            <CloseIcon />
-          </IconButton>
-        </S.DialogTitleContainer>
-      </DialogTitle>
       <DialogContent dividers>
         <Stack spacing={3}>
           <FilePreview
@@ -133,23 +161,39 @@ const FileDetailDialogContent: React.FC<{
         </Button>
       </DialogActions>
 
-      <FileEditDialog
-        fileId={fileId}
-        open={isEditDialogOpen}
-        onClose={handleCloseEditDialog}
-      />
+      {isEditDialogOpen && (
+        <FileEditDialog fileId={fileId} onClose={handleCloseEditDialog} />
+      )}
     </>
   );
 };
 
-export const FileDetailDialog: React.FC<FileDetailDialogProps> = ({
-  fileId,
-  open,
-  onClose,
-}) => {
+/**
+ * ファイル詳細取得中に表示する本体スケルトン。
+ *
+ * @remarks
+ * タイトル・閉じるボタンは境界の外で常に表示されるため、ここでは
+ * プレビュー・情報・アクションのみを骨格表示する。
+ */
+const FileDetailDialogBodySkeleton: React.FC = () => {
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      {fileId && <FileDetailDialogContent fileId={fileId} onClose={onClose} />}
-    </Dialog>
+    <>
+      <DialogContent dividers data-testid="fileDetailDialogSkeleton">
+        <Stack spacing={3}>
+          <Skeleton variant="rounded" height={200} />
+          <Stack spacing={1}>
+            <Skeleton variant="text" width="40%" />
+            <Skeleton variant="text" width="70%" />
+            <Skeleton variant="text" width="55%" />
+            <Skeleton variant="text" width="60%" />
+          </Stack>
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Skeleton variant="rounded" width={80} height={36} />
+        <Skeleton variant="rounded" width={90} height={36} />
+        <Skeleton variant="rounded" width={130} height={36} />
+      </DialogActions>
+    </>
   );
 };

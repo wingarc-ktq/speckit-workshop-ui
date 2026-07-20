@@ -1,1 +1,2 @@
-// FileCard is now exported from @/presentations/components
+export * from './EmptyRecentFiles';
+export * from './RecentFilesSkeleton';

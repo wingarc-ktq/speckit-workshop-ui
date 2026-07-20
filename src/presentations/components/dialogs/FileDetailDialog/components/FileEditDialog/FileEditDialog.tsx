@@ -6,6 +6,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import { useTranslation } from 'react-i18next';
@@ -13,14 +14,15 @@ import { useTranslation } from 'react-i18next';
 import type { FileId, UpdateFileRequest } from '@/domain/models/file';
 import type { Tag } from '@/domain/models/tag';
 import { tKeys } from '@/i18n/tKeys';
+import { QueryBoundary } from '@/presentations/components/boundaries';
 import { TagSelector } from '@/presentations/components/tags/TagSelector/TagSelector';
 import { useFileById } from '@/presentations/hooks/queries/files/useFileById';
 import { useUpdateFile } from '@/presentations/hooks/queries/files/useUpdateFile';
 import { useTags } from '@/presentations/hooks/queries/tags/useTags';
 
 interface FileEditDialogProps {
-  fileId: FileId | null;
-  open: boolean;
+  /** 編集対象のファイルID。null 許容せず、開くときは必ず選択済みであること */
+  fileId: FileId;
   onClose: () => void;
 }
 
@@ -78,7 +80,6 @@ const FileEditDialogContent: React.FC<{
 
   return (
     <>
-      <DialogTitle>{t(tKeys.filesPage.fileEditDialog.title)}</DialogTitle>
       <DialogContent dividers>
         <Stack spacing={3}>
           <TextField
@@ -138,12 +139,42 @@ const FileEditDialogContent: React.FC<{
 
 export const FileEditDialog: React.FC<FileEditDialogProps> = ({
   fileId,
-  open,
   onClose,
 }) => {
+  const { t } = useTranslation();
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      {fileId && <FileEditDialogContent fileId={fileId} onClose={onClose} />}
+    <Dialog open onClose={onClose} maxWidth="sm" fullWidth>
+      {/* タイトルは静的なため、境界の外で常に表示する */}
+      <DialogTitle>{t(tKeys.filesPage.fileEditDialog.title)}</DialogTitle>
+      <QueryBoundary skeleton={<FileEditDialogSkeleton />} resetKeys={[fileId]}>
+        <FileEditDialogContent fileId={fileId} onClose={onClose} />
+      </QueryBoundary>
     </Dialog>
+  );
+};
+
+/**
+ * ファイル編集フォームの初期値取得中に表示する本体スケルトン。
+ *
+ * @remarks
+ * タイトルは境界の外で常に表示されるため、ここでは入力フィールドとアクションのみを
+ * 骨格表示する。親（FileDetailDialog）のローディングに影響しないよう独立した境界を持つ。
+ */
+const FileEditDialogSkeleton: React.FC = () => {
+  return (
+    <>
+      <DialogContent dividers data-testid="fileEditDialogSkeleton">
+        <Stack spacing={3}>
+          <Skeleton variant="rounded" height={56} />
+          <Skeleton variant="rounded" height={120} />
+          <Skeleton variant="rounded" height={56} />
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Skeleton variant="rounded" width={90} height={36} />
+        <Skeleton variant="rounded" width={90} height={36} />
+      </DialogActions>
+    </>
   );
 };

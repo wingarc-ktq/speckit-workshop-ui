@@ -68,3 +68,21 @@ export function createMergedRepositories<T extends Record<string, unknown>>(
 
   return result;
 }
+
+/**
+ * 指定したモック関数の戻り値を保留状態の Promise に差し替え、
+ * 後から取得を完了させるための関数を返す。取得中→完了の遷移検証に使う。
+ *
+ * @example
+ * const resolve = deferMock(getFoo, fooValue);
+ * // ... 取得中（スケルトン等）を検証 ...
+ * resolve(); // 取得を完了させる
+ */
+export const deferMock = <T>(
+  mockFn: ReturnType<typeof vi.fn>,
+  value: T
+): (() => void) => {
+  const { promise, resolve } = Promise.withResolvers<T>();
+  mockFn.mockReturnValue(promise);
+  return () => resolve(value);
+};

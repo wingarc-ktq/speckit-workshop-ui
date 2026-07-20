@@ -53,7 +53,9 @@ describe('FilesPage', () => {
     test('RecentFilesSectionが表示されること', async () => {
       await renderFilePage();
 
-      expect(screen.getByTestId('recentFilesSection')).toBeInTheDocument();
+      await waitFor(() =>
+        expect(screen.getByTestId('recentFilesSection')).toBeInTheDocument()
+      );
     });
 
     test('UploadSectionが表示されること', async () => {
@@ -65,7 +67,9 @@ describe('FilesPage', () => {
     test('MyFilesSectionが表示されること', async () => {
       await renderFilePage();
 
-      expect(screen.getByTestId('myFilesSection')).toBeInTheDocument();
+      await waitFor(() =>
+        expect(screen.getByTestId('myFilesSection')).toBeInTheDocument()
+      );
     });
   });
 
@@ -87,15 +91,19 @@ describe('FilesPage', () => {
     test('検索クエリがある場合、MyFilesSectionは表示されること', async () => {
       await renderFilePage(['/?search=pdf']);
 
-      expect(screen.getByTestId('myFilesSection')).toBeInTheDocument();
+      await waitFor(() =>
+        expect(screen.getByTestId('myFilesSection')).toBeInTheDocument()
+      );
     });
 
     test('検索クエリがない場合、全てのセクションが表示されること', async () => {
       await renderFilePage();
 
-      expect(screen.getByTestId('recentFilesSection')).toBeInTheDocument();
       expect(screen.getByTestId('uploadSection')).toBeInTheDocument();
-      expect(screen.getByTestId('myFilesSection')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId('recentFilesSection')).toBeInTheDocument();
+        expect(screen.getByTestId('myFilesSection')).toBeInTheDocument();
+      });
     });
   });
 });

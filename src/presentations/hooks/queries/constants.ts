@@ -21,7 +21,7 @@ export const QUERY_KEYS = {
   FILES: {
     LIST: (params?: FileQueryParams) => {
       const keys = [];
-      keys.push(GLOBAL_LOADING, 'files', 'list');
+      keys.push('files', 'list');
 
       if (params) keys.push(params);
 
@@ -29,7 +29,7 @@ export const QUERY_KEYS = {
     },
     DETAIL: (id?: string) => {
       const keys = [];
-      keys.push(GLOBAL_LOADING, 'files', 'detail');
+      keys.push('files', 'detail');
 
       if (id) keys.push(id);
 

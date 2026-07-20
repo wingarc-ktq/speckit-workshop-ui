@@ -3,6 +3,7 @@ import { vi, describe, test, expect, beforeEach } from 'vitest';
 
 import { mockFileListResponse } from '@/__fixtures__/files';
 import { mockTags } from '@/__fixtures__/tags';
+import { deferMock } from '@/__fixtures__/testUtils';
 import { RepositoryTestWrapper } from '@/__fixtures__/testWrappers';
 import { i18n } from '@/i18n/config';
 
@@ -163,6 +164,29 @@ describe('RecentFilesSection', () => {
       expect(viewButtons).toHaveLength(0);
     });
 
+    test('ファイルがない場合、空状態のプレースホルダが表示されること', async () => {
+      getFiles.mockResolvedValueOnce({
+        ...mockFileListResponse,
+        files: [],
+      });
+
+      await renderRecentFilesSection();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('emptyRecentFiles')).toBeInTheDocument();
+      });
+
+      // locale:ja の空状態メッセージが表示されること
+      expect(
+        screen.getByText('最近使用したファイルはありません')
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'ファイルをアップロードすると、ここに最近使用したファイルが表示されます'
+        )
+      ).toBeInTheDocument();
+    });
+
     test('タグがないファイルでも正しく表示されること', async () => {
       await renderRecentFilesSection();
 
@@ -174,6 +198,39 @@ describe('RecentFilesSection', () => {
       // タグがなくてもファイルカードが表示される
       const viewButtons = screen.getAllByRole('button', { name: '文書を見る' });
       expect(viewButtons.length).toBeGreaterThanOrEqual(3);
+    });
+  });
+
+  describe('ローディング表示（QueryBoundary）', () => {
+    test('取得中はスケルトンを表示し、完了後に実データへ切り替わること', async () => {
+      // getFiles を保留状態にして、取得中→完了の遷移を制御する
+      const resolve = deferMock(getFiles, {
+        ...mockFileListResponse,
+        files: mockFileListResponse.files.slice(0, 4),
+      });
+
+      render(
+        <RepositoryTestWrapper
+          override={{
+            files: { getFiles },
+            tags: { getTags },
+          }}
+        >
+          <RecentFilesSection />
+        </RepositoryTestWrapper>
+      );
+
+      // 取得中はスケルトンが表示され、実データはまだ無い
+      expect(screen.getByTestId('recentFilesSkeleton')).toBeInTheDocument();
+      expect(screen.queryByText('document.pdf')).not.toBeInTheDocument();
+
+      // 取得完了 → 実データに切り替わり、スケルトンは消える
+      resolve();
+
+      expect(await screen.findByText('document.pdf')).toBeInTheDocument();
+      expect(
+        screen.queryByTestId('recentFilesSkeleton')
+      ).not.toBeInTheDocument();
     });
   });
 });

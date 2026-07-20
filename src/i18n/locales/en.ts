@@ -163,6 +163,10 @@ export const en = {
       fileCard: {
         viewButton: 'View Document',
       },
+      emptyState: {
+        title: 'No recent files',
+        description: 'Files you upload will appear here as recent files',
+      },
     },
   },
   layouts: {

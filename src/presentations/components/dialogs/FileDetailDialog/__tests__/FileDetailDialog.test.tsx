@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 
 import { mockFile } from '@/__fixtures__/files';
 import { mockTags } from '@/__fixtures__/tags';
+import { deferMock } from '@/__fixtures__/testUtils';
 import { RepositoryTestWrapper } from '@/__fixtures__/testWrappers';
 import type { DocumentFile } from '@/domain/models/file';
 import { i18n } from '@/i18n/config';
@@ -61,13 +62,8 @@ describe('FileDetailDialog', () => {
     mockRemoveChild.mockClear();
   });
 
-  const renderDialog = (props?: {
-    fileId?: string | null;
-    open?: boolean;
-    onClose?: () => void;
-  }) => {
+  const renderDialog = (props?: { fileId?: string; onClose?: () => void }) => {
     const fileId = props?.fileId ?? 'file-001';
-    const open = props?.open ?? true;
     const onClose = props?.onClose ?? vi.fn();
 
     return render(
@@ -83,7 +79,7 @@ describe('FileDetailDialog', () => {
           },
         }}
       >
-        <FileDetailDialog fileId={fileId} open={open} onClose={onClose} />
+        <FileDetailDialog fileId={fileId} onClose={onClose} />
       </RepositoryTestWrapper>
     );
   };
@@ -186,26 +182,13 @@ describe('FileDetailDialog', () => {
     });
   });
 
-  describe('ダイアログの開閉', () => {
-    test('openがtrueの場合、ダイアログが表示されること', async () => {
-      renderDialog({ open: true });
+  describe('ダイアログの表示', () => {
+    test('ダイアログが表示されること', async () => {
+      renderDialog();
 
       await waitFor(() => {
         expect(screen.getByText('ファイル詳細')).toBeInTheDocument();
       });
-    });
-
-    test('openがfalseの場合、ダイアログが表示されないこと', () => {
-      renderDialog({ open: false });
-
-      expect(screen.queryByText('ファイル詳細')).not.toBeInTheDocument();
-    });
-
-    test('fileIdがnullの場合、ダイアログの内容が表示されないこと', () => {
-      renderDialog({ fileId: null });
-
-      // ダイアログ自体は開いているが、コンテンツは表示されない
-      expect(screen.queryByText('ファイル名')).not.toBeInTheDocument();
     });
 
     test('閉じるボタンをクリックするとonCloseが呼び出されること', async () => {
@@ -214,9 +197,12 @@ describe('FileDetailDialog', () => {
 
       renderDialog({ onClose });
 
-      await waitFor(() => {
-        expect(screen.getByText('ファイル詳細')).toBeInTheDocument();
-      });
+      // 本体（DialogActions）が読み込まれる（スケルトンが消える）まで待つ
+      await waitFor(() =>
+        expect(
+          screen.queryByTestId('fileDetailDialogSkeleton')
+        ).not.toBeInTheDocument()
+      );
 
       // ダイアログアクションの閉じるボタンを取得（2つの「閉じる」ボタンの内、ダイアログアクション内のものをクリック）
       const closeButtons = screen.getAllByRole('button', { name: '閉じる' });
@@ -515,7 +501,7 @@ describe('FileDetailDialog', () => {
       // 初回のプレビュー用呼び出しをクリア
       downloadFile.mockClear();
 
-      const downloadButton = screen.getByRole('button', {
+      const downloadButton = await screen.findByRole('button', {
         name: 'ダウンロード',
       });
       await user.click(downloadButton);
@@ -566,7 +552,7 @@ describe('FileDetailDialog', () => {
           return originalRemoveChild(node);
         });
 
-      const downloadButton = screen.getByRole('button', {
+      const downloadButton = await screen.findByRole('button', {
         name: 'ダウンロード',
       });
       await user.click(downloadButton);
@@ -623,7 +609,7 @@ describe('FileDetailDialog', () => {
           return originalRemoveChild(node);
         });
 
-      const downloadButton = screen.getByRole('button', {
+      const downloadButton = await screen.findByRole('button', {
         name: 'ダウンロード',
       });
       await user.click(downloadButton);
@@ -666,7 +652,7 @@ describe('FileDetailDialog', () => {
 
       mockRevokeObjectURL.mockClear();
 
-      const downloadButton = screen.getByRole('button', {
+      const downloadButton = await screen.findByRole('button', {
         name: 'ダウンロード',
       });
       await user.click(downloadButton);
@@ -723,7 +709,7 @@ describe('FileDetailDialog', () => {
         expect(screen.getByText('ファイル詳細')).toBeInTheDocument();
       });
 
-      const downloadButton = screen.getByRole('button', {
+      const downloadButton = await screen.findByRole('button', {
         name: 'ダウンロード',
       });
 
@@ -800,7 +786,7 @@ describe('FileDetailDialog', () => {
             },
           }}
         >
-          <FileDetailDialog fileId="file-002" open={true} onClose={vi.fn()} />
+          <FileDetailDialog fileId="file-002" onClose={vi.fn()} />
         </RepositoryTestWrapper>
       );
 
@@ -857,6 +843,42 @@ describe('FileDetailDialog', () => {
       });
       expect(screen.getByText('Review')).toBeInTheDocument();
       expect(screen.getByText('Urgent')).toBeInTheDocument();
+    });
+  });
+
+  describe('ローディング表示（QueryBoundary）', () => {
+    test('取得中はスケルトンを表示し、完了後に実データへ切り替わること', async () => {
+      // getFileById を保留状態にして、取得中→完了の遷移を制御する
+      const resolve = deferMock(getFileById, mockFile);
+
+      render(
+        <RepositoryTestWrapper
+          override={{
+            files: { getFileById, downloadFile },
+            tags: { getTags },
+          }}
+        >
+          <FileDetailDialog fileId={mockFile.id} onClose={vi.fn()} />
+        </RepositoryTestWrapper>
+      );
+
+      // 取得中はスケルトンが表示され、本体（ダウンロードボタン）はまだ無い
+      expect(
+        screen.getByTestId('fileDetailDialogSkeleton')
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'ダウンロード' })
+      ).not.toBeInTheDocument();
+
+      // 取得完了 → 実データに切り替わり、スケルトンは消える
+      resolve();
+
+      expect(
+        await screen.findByRole('button', { name: 'ダウンロード' })
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByTestId('fileDetailDialogSkeleton')
+      ).not.toBeInTheDocument();
     });
   });
 });

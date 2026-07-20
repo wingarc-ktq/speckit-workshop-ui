@@ -169,6 +169,11 @@ export const ja = {
       fileCard: {
         viewButton: '文書を見る',
       },
+      emptyState: {
+        title: '最近使用したファイルはありません',
+        description:
+          'ファイルをアップロードすると、ここに最近使用したファイルが表示されます',
+      },
     },
   },
   layouts: {
