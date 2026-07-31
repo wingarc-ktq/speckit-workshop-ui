@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "figma": {
+      "serverUrl": "https://mcp.figma.com/mcp"
+    },
+    "playwright": {
+      "command": "pnpm",
+      "args": [
+        "dlx",
+        "@playwright/mcp@latest",
+        "--config",
+        ".vscode/playwright-config.json"
+      ]
+    }
+  }
+}

@@ -167,12 +167,15 @@ pnpm test:e2e:debug      # デバッグモード
 
 ### 設定ファイル
 
-プロジェクトでは2種類のMCP設定ファイルを使用します：
+プロジェクトでは、各 AI ツールに対応した MCP 設定ファイルを使用します：
 
 - **`.mcp.json`**: Claude Code プロジェクト単位の MCP 設定
 - **`.vscode/mcp.json`**: VSCode / GitHub Copilot 用の MCP 設定
+- **`.cline/mcp.json`**: Cline プロジェクト単位の MCP 設定
+- **`.gemini/settings.json`**: Gemini CLI プロジェクト単位の MCP 設定
+- **`.agents/mcp_config.json`**: Antigravity (agy) プロジェクト単位の MCP 設定
 
-両方のファイルは同じ MCP サーバーを設定していますが、異なるツールで使用されます。
+これらのファイルは同じ MCP サーバーを設定していますが、異なるツールで使用されます。
 
 ### 利用可能なMCPサーバー
 
