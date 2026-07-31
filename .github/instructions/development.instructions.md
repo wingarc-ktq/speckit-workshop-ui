@@ -70,5 +70,10 @@ Figma URL: https://www.figma.com/file/YOUR_FILE_KEY/...
 
 ### 設定ファイル
 
-- **MCP設定**: `.mcp.json` (Claude Code), `.vscode/mcp.json` (VSCode/GitHub Copilot)
+- **MCP設定**: 
+  - Claude Code: `.mcp.json`
+  - VSCode / GitHub Copilot: `.vscode/mcp.json`
+  - Cline: `.cline/mcp.json`
+  - Gemini CLI: `.gemini/settings.json`
+  - Antigravity (agy): `.agents/mcp_config.json`
 - **Playwright設定**: `.vscode/playwright-config.json`
