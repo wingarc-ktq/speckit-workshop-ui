@@ -1,17 +1,11 @@
 import React from 'react';
 
-import List from '@mui/material/List';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
 import Toolbar from '@mui/material/Toolbar';
 
-import { useMenuItems } from '../../hooks';
-
+import { GeneralSection, StorageSection, TagsSection } from './components';
 import * as S from './styled';
 
 export const AppSidebar: React.FC = () => {
-  const menuItems = useMenuItems();
-
   return (
     <S.SidebarDrawer
       data-testid="appSidebar"
@@ -21,20 +15,9 @@ export const AppSidebar: React.FC = () => {
     >
       <Toolbar />
       <S.SidebarContent>
-        <List>
-          {menuItems.map((item) => (
-            <S.NavigationListItem key={item.text} disablePadding>
-              <S.NavigationLink to={item.path}>
-                {({ isActive }: { isActive: boolean }) => (
-                  <S.NavigationButton selected={isActive}>
-                    <ListItemIcon>{item.icon}</ListItemIcon>
-                    <ListItemText primary={item.text} />
-                  </S.NavigationButton>
-                )}
-              </S.NavigationLink>
-            </S.NavigationListItem>
-          ))}
-        </List>
+        <GeneralSection />
+        <TagsSection />
+        <StorageSection />
       </S.SidebarContent>
     </S.SidebarDrawer>
   );

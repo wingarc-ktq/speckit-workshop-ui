@@ -1,3 +1,5 @@
+import type { FileQueryParams } from '@/domain/models/file';
+
 /**
  * ローディングをグローバルで表示するクエリのキー
  * @remark
@@ -15,15 +17,28 @@ export const QUERY_KEYS = {
     CURRENT_SESSION: [GLOBAL_LOADING, 'auth', 'currentSession'],
   },
 
-  // 今後の拡張例
-  // USERS: {
-  //   LIST: [GLOBAL_LOADING, 'users', 'list'],
-  //   DETAIL: (id: string) => [GLOBAL_LOADING, 'users', 'detail', id],
-  // },
-  //
-  // POSTS: {
-  //   LIST: [GLOBAL_LOADING, 'posts', 'list'],
-  //   DETAIL: (id: string) => [GLOBAL_LOADING, 'posts', 'detail', id],
-  //   BY_CATEGORY: (category: string) => [GLOBAL_LOADING, 'posts', 'category', category],
-  // },
+  // ファイル関連
+  FILES: {
+    LIST: (params?: FileQueryParams) => {
+      const keys = [];
+      keys.push('files', 'list');
+
+      if (params) keys.push(params);
+
+      return keys;
+    },
+    DETAIL: (id?: string) => {
+      const keys = [];
+      keys.push('files', 'detail');
+
+      if (id) keys.push(id);
+
+      return keys;
+    },
+  },
+
+  // タグ関連
+  TAGS: {
+    LIST: [GLOBAL_LOADING, 'tags', 'list'],
+  },
 } as const;

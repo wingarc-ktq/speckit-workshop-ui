@@ -1,7 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 
 import { AppLayout } from '@/presentations/layouts';
-import { HomePage, LoginPage, NotFoundPage } from '@/presentations/pages';
+import { FilesPage, LoginPage, NotFoundPage } from '@/presentations/pages';
 
 import { ProtectedRoute, RouteErrorBoundary } from './components';
 
@@ -34,7 +34,7 @@ export const routes = [
         children: [
           {
             index: true,
-            lazy: async () => ({ Component: HomePage }),
+            lazy: async () => ({ Component: FilesPage }),
           },
         ],
       },

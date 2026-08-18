@@ -29,6 +29,11 @@ export default defineConfig({
     mockReset: true,
     css: true,
     exclude: ['**/node_modules/**', '**/playwright/**', '**/.claude/**'],
+    server: {
+      deps: {
+        inline: ['@mui/x-data-grid'],
+      },
+    },
     coverage: {
       reporter: ['text', 'json', 'html'],
       include: ['src/**'],

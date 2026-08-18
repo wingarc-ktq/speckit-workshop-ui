@@ -1,5 +1,13 @@
 export const ja = {
   title: 'UIプロトタイプ',
+  common: {
+    cancel: 'キャンセル',
+    close: '閉じる',
+    save: '保存',
+    delete: '削除',
+    edit: '編集',
+    create: '作成',
+  },
   auth: {
     login: 'ログイン',
     logout: 'ログアウト',
@@ -57,6 +65,15 @@ export const ja = {
       message: '読み込みに失敗しました',
       reload: '再読み込み',
     },
+    tagSelector: {
+      label: 'タグ',
+      placeholder: 'タグを選択...',
+      noOptions: '利用可能なタグがありません',
+      loading: '読み込み中...',
+      clear: 'クリア',
+      close: '閉じる',
+      open: '開く',
+    },
   },
   homePage: {
     title: 'ダッシュボード',
@@ -92,5 +109,124 @@ export const ja = {
   crashPage: {
     title:
       'ページを表示できませんでした。ページを更新してもう一度お試しください。',
+  },
+  filesPage: {
+    fileUploadZone: {
+      dragActive: 'ここにファイルをドロップ...',
+      dragInactive: 'クリックしてアップロード、またはドラッグ&ドロップ',
+      supportedFormats: 'PDF、Word、Excel、画像 - 最大200MB',
+    },
+    uploadSection: {
+      title: 'ファイルをアップロード',
+      maxFilesError: '一度にアップロードできるファイルは最大20個までです。',
+      unsupportedFilesError:
+        '次のファイルはサポートされていないか、サイズが大きすぎます: {{files}}',
+      uploadComplete: 'アップロード完了',
+      uploadFailed: 'アップロードに失敗しました',
+      progressPercent: '{{progress}}%',
+    },
+    myFilesSection: {
+      title: 'マイファイル',
+      noResults: '検索結果が見つかりませんでした',
+      noResultsDescription:
+        '別のキーワードで検索するか、検索条件をクリアしてください',
+      bulkDownload: '選択したファイルをダウンロード ({{count}})',
+    },
+    fileDetailDialog: {
+      title: 'ファイル詳細',
+      close: '閉じる',
+      download: 'ダウンロード',
+      edit: '編集',
+      fileName: 'ファイル名',
+      fileSize: 'ファイルサイズ',
+      uploadedAt: 'アップロード日時',
+      tags: 'タグ',
+      noTags: 'タグなし',
+      description: '説明',
+      preview: {
+        pdf: {
+          title: 'PDFプレビュー機能は今後実装予定です',
+          description:
+            'ダウンロードボタンからファイルをダウンロードしてください',
+        },
+        unsupported: {
+          title: 'プレビュー機能は対応していません',
+          description:
+            'ダウンロードボタンからファイルをダウンロードしてください',
+        },
+      },
+    },
+    fileEditDialog: {
+      title: 'ファイルを編集',
+      fileName: 'ファイル名',
+      fileNameError: 'ファイル名は1〜255文字で入力してください',
+      description: '説明',
+      descriptionError: '説明は500文字以内で入力してください',
+      tags: 'タグ',
+    },
+    recentFilesSection: {
+      title: '最近使用したファイル',
+      fileCard: {
+        viewButton: '文書を見る',
+      },
+      emptyState: {
+        title: '最近使用したファイルはありません',
+        description:
+          'ファイルをアップロードすると、ここに最近使用したファイルが表示されます',
+      },
+    },
+  },
+  layouts: {
+    appHeader: {
+      searchPlaceholder: 'ファイルを検索...',
+      filterPopover: {
+        title: '詳細検索',
+        searchLabel: 'キーワード',
+        searchPlaceholder: 'ファイル名を入力...',
+        tagsLabel: 'タグで絞り込み',
+        tagsPlaceholder: 'タグを選択...',
+        clear: 'クリア',
+        apply: '適用',
+      },
+    },
+    appSidebar: {
+      general: {
+        title: '一般',
+        myFiles: 'マイファイル',
+        recent: '最近使用したファイル',
+        sharedWithMe: '共有アイテム',
+        deletedFiles: 'ゴミ箱',
+      },
+      tags: {
+        title: 'タグ',
+        manageDialog: {
+          title: 'タグの管理',
+          createButton: '新しいタグを作成',
+        },
+        formDialog: {
+          createTitle: 'タグを作成',
+          editTitle: 'タグを編集',
+          nameLabel: 'タグ名',
+          nameRequired: 'タグ名は必須です',
+          nameMaxLength: 'タグ名は50文字以内で入力してください',
+          colorLabel: '色',
+          colorRequired: '色は必須です',
+          createButton: '作成',
+          saveButton: '保存',
+        },
+        deleteDialog: {
+          title: 'タグを削除',
+          message: '「{{tagName}}」を削除してもよろしいですか?',
+          warning:
+            'このタグが使用されているファイルから、このタグが削除されます。この操作は取り消せません。',
+          confirmButton: '削除',
+        },
+      },
+      storage: {
+        title: 'ストレージ',
+        upgrade: 'アップグレード',
+        usage: '{{used}} GB / {{total}} GB',
+      },
+    },
   },
 } as const;

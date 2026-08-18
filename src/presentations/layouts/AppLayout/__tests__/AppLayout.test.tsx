@@ -1,7 +1,8 @@
 import { render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 
+import { mockTags } from '@/__fixtures__/tags';
 import { RepositoryTestWrapper } from '@/__fixtures__/testWrappers';
 import { i18n } from '@/i18n/config';
 
@@ -13,15 +14,43 @@ const mockWindowSize = (width: number, height: number) => {
   vi.stubGlobal('innerHeight', height);
 };
 
+// テスト用の子コンポーネント
+const TestChild = () => <div data-testid="testChild">テストコンテンツ</div>;
+
 const renderAppLayout = async () => {
-  const r = render(
-    <MemoryRouter initialEntries={['/']}>
-      <AppLayout />
-    </MemoryRouter>,
+  const getTags = vi.fn(async () => mockTags);
+
+  // AppLayoutと同じルート構造でテスト
+  const routes = [
     {
-      wrapper: RepositoryTestWrapper,
-    }
+      path: '/',
+      element: <AppLayout />,
+      children: [
+        {
+          index: true,
+          element: <TestChild />,
+        },
+      ],
+    },
+  ];
+
+  const router = createMemoryRouter(routes, {
+    initialEntries: ['/'],
+  });
+
+  const r = render(
+    <RepositoryTestWrapper
+      hasSuspense
+      override={{
+        tags: {
+          getTags,
+        },
+      }}
+    >
+      <RouterProvider router={router} />
+    </RepositoryTestWrapper>
   );
+
   await waitFor(() =>
     expect(r.queryByTestId('suspense')).not.toBeInTheDocument()
   );

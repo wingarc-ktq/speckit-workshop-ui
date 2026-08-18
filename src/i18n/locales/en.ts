@@ -1,5 +1,13 @@
 export const en = {
   title: 'ui-prototype',
+  common: {
+    cancel: 'Cancel',
+    close: 'Close',
+    save: 'Save',
+    delete: 'Delete',
+    edit: 'Edit',
+    create: 'Create',
+  },
   auth: {
     login: 'Login',
     logout: 'Logout',
@@ -54,6 +62,15 @@ export const en = {
       message: 'Failed to load.',
       reload: 'Reload',
     },
+    tagSelector: {
+      label: 'Tags',
+      placeholder: 'Select tags...',
+      noOptions: 'No tags available',
+      loading: 'Loading...',
+      clear: 'Clear',
+      close: 'Close',
+      open: 'Open',
+    },
   },
   homePage: {
     title: 'Dashboard',
@@ -88,5 +105,121 @@ export const en = {
   crashPage: {
     title:
       'The page could not be displayed. Please refresh the page and try again.',
+  },
+  filesPage: {
+    fileUploadZone: {
+      dragActive: 'Drop files here...',
+      dragInactive: 'Click to upload or drag and drop',
+      supportedFormats: 'PDF, Word, Excel, Images - Max 200MB',
+    },
+    uploadSection: {
+      title: 'Upload Files',
+      maxFilesError: 'You can upload a maximum of 20 files at once.',
+      unsupportedFilesError:
+        'The following files are not supported or too large: {{files}}',
+      uploadComplete: 'Upload complete',
+      uploadFailed: 'Upload failed',
+      progressPercent: '{{progress}}%',
+    },
+    myFilesSection: {
+      title: 'My Files',
+      noResults: 'No search results found',
+      noResultsDescription:
+        'Try a different keyword or clear the search filter',
+      bulkDownload: 'Download selected files ({{count}})',
+    },
+    fileDetailDialog: {
+      title: 'File Details',
+      close: 'Close',
+      download: 'Download',
+      edit: 'Edit',
+      fileName: 'File Name',
+      fileSize: 'File Size',
+      uploadedAt: 'Uploaded At',
+      tags: 'Tags',
+      noTags: 'No tags',
+      description: 'Description',
+      preview: {
+        pdf: {
+          title: 'PDF preview feature will be available soon',
+          description: 'Please download the file using the download button',
+        },
+        unsupported: {
+          title: 'Preview not available',
+          description: 'Please download the file using the download button',
+        },
+      },
+    },
+    fileEditDialog: {
+      title: 'Edit File',
+      fileName: 'File Name',
+      fileNameError: 'File name must be between 1 and 255 characters',
+      description: 'Description',
+      descriptionError: 'Description must be no more than 500 characters',
+      tags: 'Tags',
+    },
+    recentFilesSection: {
+      title: 'Recent Files',
+      fileCard: {
+        viewButton: 'View Document',
+      },
+      emptyState: {
+        title: 'No recent files',
+        description: 'Files you upload will appear here as recent files',
+      },
+    },
+  },
+  layouts: {
+    appHeader: {
+      searchPlaceholder: 'Search files...',
+      filterPopover: {
+        title: 'Advanced Search',
+        searchLabel: 'Keyword',
+        searchPlaceholder: 'Enter file name...',
+        tagsLabel: 'Filter by tags',
+        tagsPlaceholder: 'Select tags...',
+        clear: 'Clear',
+        apply: 'Apply',
+      },
+    },
+    appSidebar: {
+      general: {
+        title: 'General',
+        myFiles: 'My Files',
+        recent: 'Recent',
+        sharedWithMe: 'Shared with Me',
+        deletedFiles: 'Deleted Files',
+      },
+      tags: {
+        title: 'Tags',
+        manageDialog: {
+          title: 'Manage Tags',
+          createButton: 'Create New Tag',
+        },
+        formDialog: {
+          createTitle: 'Create Tag',
+          editTitle: 'Edit Tag',
+          nameLabel: 'Tag Name',
+          nameRequired: 'Tag name is required',
+          nameMaxLength: 'Tag name must be 50 characters or less',
+          colorLabel: 'Color',
+          colorRequired: 'Color is required',
+          createButton: 'Create',
+          saveButton: 'Save',
+        },
+        deleteDialog: {
+          title: 'Delete Tag',
+          message: 'Are you sure you want to delete "{{tagName}}"?',
+          warning:
+            'This tag will be removed from all files using it. This action cannot be undone.',
+          confirmButton: 'Delete',
+        },
+      },
+      storage: {
+        title: 'Storage',
+        upgrade: 'Upgrade',
+        usage: '{{used}} GB of {{total}} GB',
+      },
+    },
   },
 } as const;

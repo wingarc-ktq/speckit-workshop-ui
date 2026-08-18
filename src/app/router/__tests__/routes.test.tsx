@@ -1,8 +1,9 @@
-import { render, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 
 import { mockAuthSession } from '@/__fixtures__/auth';
 import { networkError, unauthorizedError } from '@/__fixtures__/errors';
+import { mockTags } from '@/__fixtures__/tags';
 import { RepositoryTestWrapper } from '@/__fixtures__/testWrappers';
 import { i18n } from '@/i18n/config';
 
@@ -10,7 +11,7 @@ import { routes } from '../routes';
 
 // Pageコンポーネントはモックしてテストする
 vi.mock('@/presentations/pages', () => ({
-  HomePage: () => <div data-testid="homePage">ダッシュボード</div>,
+  FilesPage: () => <div data-testid="filesPage">ファイルページ</div>,
   LoginPage: () => <div data-testid="loginPage">ログイン</div>,
   NotFoundPage: () => (
     <div data-testid="notFoundPage">404 ページが見つかりません</div>
@@ -22,6 +23,8 @@ vi.mock('@/presentations/pages', () => ({
 
 describe('AppRoutes', () => {
   const getCurrentSession = vi.fn();
+  const getTags = vi.fn(async () => mockTags);
+  const getFiles = vi.fn();
 
   beforeEach(async () => {
     await i18n.changeLanguage('ja');
@@ -46,8 +49,8 @@ describe('AppRoutes', () => {
     },
   ];
 
-  const renderAppRoutes = (initialRoute = '/') => {
-    return render(
+  const renderAppRoutes = async (initialRoute = '/') => {
+    const r = render(
       <RouterProvider
         router={createMemoryRouter(testRoutes, {
           initialEntries: [initialRoute],
@@ -61,6 +64,12 @@ describe('AppRoutes', () => {
               auth: {
                 getCurrentSession,
               },
+              tags: {
+                getTags,
+              },
+              files: {
+                getFiles,
+              },
             }}
           >
             {children}
@@ -68,70 +77,75 @@ describe('AppRoutes', () => {
         ),
       }
     );
+
+    await waitFor(() =>
+      expect(r.queryByTestId('suspense')).not.toBeInTheDocument()
+    );
+    return r;
   };
 
-  test('セッション取得に成功した場合、HomePageがレンダリングされる', async () => {
+  test('セッション取得に成功した場合、FilesPageがレンダリングされる', async () => {
     getCurrentSession.mockResolvedValue(mockAuthSession);
 
-    const r = renderAppRoutes();
+    await renderAppRoutes();
 
     await waitFor(() => {
       expect(getCurrentSession).toHaveBeenCalledOnce();
     });
 
     await waitFor(() => {
-      expect(r.getByTestId('homePage')).toBeInTheDocument();
+      expect(screen.getByTestId('filesPage')).toBeInTheDocument();
     });
   });
   describe('セッション取得に失敗した場合', () => {
     test('セッション切れの場合、LoginPageがレンダリングされる', async () => {
       getCurrentSession.mockRejectedValue(unauthorizedError);
 
-      const r = renderAppRoutes();
+      await renderAppRoutes();
 
       await waitFor(() => {
         expect(getCurrentSession).toHaveBeenCalledOnce();
       });
 
       await waitFor(() => {
-        expect(r.getByTestId('loginPage')).toBeInTheDocument();
+        expect(screen.getByTestId('loginPage')).toBeInTheDocument();
       });
     });
     test('それ以外の場合、CrashPageが表示される', async () => {
       getCurrentSession.mockRejectedValue(networkError);
 
-      const r = renderAppRoutes();
+      await renderAppRoutes();
 
       await waitFor(() => {
         expect(getCurrentSession).toHaveBeenCalledOnce();
       });
 
       await waitFor(() => {
-        expect(r.getByTestId('crashPage')).toBeInTheDocument();
-        expect(r.getByText(/Network error/)).toBeInTheDocument();
+        expect(screen.getByTestId('crashPage')).toBeInTheDocument();
+        expect(screen.getByText(/Network error/)).toBeInTheDocument();
       });
     });
   });
 
   describe('ルーティングのテスト', () => {
     describe('ルートパス', () => {
-      test('ルーティングが正しく機能する', async () => {
+      test('/ にアクセスした場合、FilesPageが表示される', async () => {
         getCurrentSession.mockResolvedValue(mockAuthSession);
 
-        const r = renderAppRoutes('/');
+        await renderAppRoutes('/');
 
         await waitFor(() => {
-          expect(r.getByTestId('homePage')).toBeInTheDocument();
+          expect(screen.getByTestId('filesPage')).toBeInTheDocument();
         });
       });
     });
     describe('存在しないページへのアクセス', () => {
       test('存在しないページにアクセスした場合、NotFoundPageが表示される', async () => {
         getCurrentSession.mockResolvedValue(mockAuthSession);
-        const r = renderAppRoutes('/non-existent-page');
+        await renderAppRoutes('/non-existent-page');
 
         await waitFor(() => {
-          expect(r.getByTestId('notFoundPage')).toBeInTheDocument();
+          expect(screen.getByTestId('notFoundPage')).toBeInTheDocument();
         });
       });
     });
@@ -139,10 +153,10 @@ describe('AppRoutes', () => {
     describe('RouteErrorBoundary', () => {
       test('ページコンポーネントでエラーが発生した場合、CrashPageが表示される', async () => {
         getCurrentSession.mockResolvedValue(mockAuthSession);
-        const r = renderAppRoutes('/test-error');
+        await renderAppRoutes('/test-error');
 
         await waitFor(() => {
-          expect(r.getByTestId('crashPage')).toBeInTheDocument();
+          expect(screen.getByTestId('crashPage')).toBeInTheDocument();
         });
       });
     });

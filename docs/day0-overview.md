@@ -406,10 +406,7 @@ Spec Kitコマンドが構造とコードを生成するが、最終判断は開
 **環境準備チェックリスト**:
 
 - [ ] Figma for Education アカウント取得
-- [ ] 下記のいずれかのAIツールを利用可能
-  - GitHub Copilot
-  - Claude Code
-  - Gemini Cli (Antigravity Cli)
+- [ ] GitHub Copilot または Claude Codeにアクセス可能
 - [ ] このリポジトリをクローン済み
 - [ ] `pnpm install` で依存関係インストール済み
 

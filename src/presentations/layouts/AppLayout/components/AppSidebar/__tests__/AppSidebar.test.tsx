@@ -1,100 +1,121 @@
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import FolderIcon from '@mui/icons-material/Folder';
-import SettingsIcon from '@mui/icons-material/Settings';
-import { render } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
+import { mockTags } from '@/__fixtures__/tags';
+import { RepositoryTestWrapper } from '@/__fixtures__/testWrappers';
 import { i18n } from '@/i18n/config';
-import { useMenuItems } from '@/presentations/layouts/AppLayout/hooks/useMenuItems';
 
 import { AppSidebar } from '../AppSidebar';
 
-// useMenuItemsフックをモック
-vi.mock('@/presentations/layouts/AppLayout/hooks/useMenuItems');
-
-const renderAppSidebar = (initialRoute = '/') => {
-  return render(
-    <MemoryRouter initialEntries={[initialRoute]}>
-      <AppSidebar />
-    </MemoryRouter>
-  );
-};
-
 describe('AppSidebar', () => {
+  const getTags = vi.fn(async () => mockTags);
+
+  beforeEach(async () => {
+    await i18n.changeLanguage('ja');
+  });
+
+  const renderAppSidebar = async () => {
+    const r = render(
+      <MemoryRouter>
+        <RepositoryTestWrapper
+          hasSuspense
+          override={{
+            tags: {
+              getTags,
+            },
+          }}
+        >
+          <AppSidebar />
+        </RepositoryTestWrapper>
+      </MemoryRouter>
+    );
+    await waitFor(() => {
+      expect(screen.queryByTestId('suspense')).not.toBeInTheDocument();
+    });
+    return r;
+  };
+
   describe('基本的な表示', () => {
-    const mockMenuItems = [
-      { text: 'ルート', path: '/', icon: <div>root-icon</div> },
-      { text: 'ページ', path: '/page', icon: <div>page-icon</div> },
-    ];
+    test('サイドバーが表示されること', async () => {
+      await renderAppSidebar();
 
-    beforeEach(() => {
-      i18n.changeLanguage('ja');
-      vi.mocked(useMenuItems).mockReturnValue(mockMenuItems);
+      const sidebar = screen.getByTestId('appSidebar');
+      expect(sidebar).toBeInTheDocument();
     });
 
-    test('メニューアイテムが表示される', async () => {
-      const { getByText } = renderAppSidebar();
+    test('サイドバーがpersistentモードで表示されること', async () => {
+      await renderAppSidebar();
 
-      expect(getByText('ルート')).toBeInTheDocument();
-      expect(getByText('ページ')).toBeInTheDocument();
-    });
-
-    test('現在のパスに対応するメニューアイテムが選択状態になる', async () => {
-      const { getByText } = renderAppSidebar('/page');
-
-      const pageMenuItem = getByText('ページ').closest('a');
-      expect(pageMenuItem).toHaveAttribute('href', '/page');
+      const sidebar = screen.getByTestId('appSidebar');
+      expect(sidebar).toHaveClass('MuiDrawer-root');
     });
   });
 
-  describe('特殊なケース', () => {
-    test('メニューアイテムが空の場合でもエラーにならない', async () => {
-      vi.mocked(useMenuItems).mockReturnValue([]);
+  describe('セクションコンポーネントの表示', () => {
+    test('GeneralSectionが表示されること', async () => {
+      await renderAppSidebar();
 
-      const { container } = renderAppSidebar();
-
-      // リストは存在するが、アイテムは表示されない
-      const list = container.querySelector('ul');
-      expect(list).toBeInTheDocument();
-      expect(list?.children).toHaveLength(0);
+      const generalSection = screen.getByTestId('generalSection');
+      expect(generalSection).toBeInTheDocument();
     });
 
-    test('多数のメニューアイテムが正しく表示される', async () => {
-      const mockMenuItems = [
-        { text: 'ダッシュボード', path: '/', icon: <DashboardIcon /> },
-        { text: 'ファイル', path: '/files', icon: <FolderIcon /> },
-        { text: '設定', path: '/settings', icon: <SettingsIcon /> },
-        { text: 'ユーザー', path: '/users', icon: <DashboardIcon /> },
-        { text: 'レポート', path: '/reports', icon: <FolderIcon /> },
-      ];
-      vi.mocked(useMenuItems).mockReturnValue(mockMenuItems);
+    test('TagsSectionが表示されること', async () => {
+      await renderAppSidebar();
 
-      const { getByText } = renderAppSidebar();
-
-      mockMenuItems.forEach((item) => {
-        expect(getByText(item.text)).toBeInTheDocument();
-      });
+      const tagsSection = screen.getByTestId('tagsSection');
+      expect(tagsSection).toBeInTheDocument();
     });
 
-    test('特殊文字を含むメニューアイテムが正しく表示される', async () => {
-      const mockMenuItems = [
-        {
-          text: 'ファイル & フォルダー',
-          path: '/files',
-          icon: <FolderIcon />,
-        },
-        {
-          text: 'レポート（詳細）',
-          path: '/reports',
-          icon: <DashboardIcon />,
-        },
-      ];
-      vi.mocked(useMenuItems).mockReturnValue(mockMenuItems);
+    test('StorageSectionが表示されること', async () => {
+      await renderAppSidebar();
 
-      const { getByText } = renderAppSidebar();
+      const storageSection = screen.getByTestId('storageSection');
+      expect(storageSection).toBeInTheDocument();
+    });
 
-      expect(getByText('ファイル & フォルダー')).toBeInTheDocument();
-      expect(getByText('レポート（詳細）')).toBeInTheDocument();
+    test('全てのセクションが正しい順序で表示されること', async () => {
+      await renderAppSidebar();
+
+      const generalSection = screen.getByTestId('generalSection');
+      const tagsSection = screen.getByTestId('tagsSection');
+      const storageSection = screen.getByTestId('storageSection');
+
+      // 全てのセクションが存在することを確認
+      expect(generalSection).toBeInTheDocument();
+      expect(tagsSection).toBeInTheDocument();
+      expect(storageSection).toBeInTheDocument();
+
+      // 順序を確認: GeneralSection → TagsSection → StorageSection
+      const sidebar = screen.getByTestId('appSidebar');
+      const sections = Array.from(
+        sidebar.querySelectorAll('[data-testid$="Section"]')
+      );
+
+      expect(sections).toHaveLength(3);
+      expect(sections[0]).toHaveAttribute('data-testid', 'generalSection');
+      expect(sections[1]).toHaveAttribute('data-testid', 'tagsSection');
+      expect(sections[2]).toHaveAttribute('data-testid', 'storageSection');
+    });
+  });
+
+  describe('構造とレイアウト', () => {
+    test('Drawerコンポーネントが正しい属性を持つこと', async () => {
+      await renderAppSidebar();
+      const sidebar = screen.getByTestId('appSidebar');
+
+      // MUI Drawerのクラスが適用されていることを確認
+      expect(sidebar).toHaveClass('MuiDrawer-root');
+
+      // Paper要素が存在することを確認（Drawerの内部要素）
+      const paper = sidebar.querySelector('.MuiDrawer-paper');
+      expect(paper).toBeInTheDocument();
+    });
+
+    test('Toolbarが表示されること', async () => {
+      const { container } = await renderAppSidebar();
+      // MUI Toolbarのクラスが存在することを確認
+      const toolbar = container.querySelector('.MuiToolbar-root');
+      expect(toolbar).toBeInTheDocument();
     });
   });
 });
