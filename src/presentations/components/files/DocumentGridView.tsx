@@ -206,11 +206,16 @@ export const DocumentGridView: React.FC<DocumentGridViewProps> = ({ files }) => 
                         label={tag.name}
                         size="small"
                         sx={{
-                          backgroundColor: tag.color,
-                          color: '#fff',
+                          backgroundColor: tag.backgroundColor,
+                          color: tag.color,
                           fontWeight: 500,
-                          height: 20,
-                          fontSize: '0.75rem',
+                          fontSize: '12px',
+                          height: '24px',
+                          borderRadius: '6px',
+                          padding: '2px 8px',
+                          '& .MuiChip-label': {
+                            padding: '0',
+                          },
                         }}
                       />
                     );

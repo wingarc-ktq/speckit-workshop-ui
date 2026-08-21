@@ -9,7 +9,7 @@ import {
   TableHead,
   TableRow,
   Typography,
-} from '@mui/material';
+} from '@mui/material';//バレルインポート。良くないとする。
 import { useTranslation } from 'react-i18next';
 
 import type { FileInfo } from '@/adapters/generated/files';
