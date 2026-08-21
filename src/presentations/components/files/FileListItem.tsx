@@ -1,8 +1,15 @@
-import { Box, Checkbox, Chip, TableCell, TableRow, Typography } from '@mui/material';
-import { Description as DescriptionIcon, FilePresent as FilePresentIcon, DataObject as DataObjectIcon } from '@mui/icons-material';
+import DataObjectIcon from '@mui/icons-material/DataObject';
+import DescriptionIcon from '@mui/icons-material/Description';
+import FilePresentIcon from '@mui/icons-material/FilePresent';
+import Box from '@mui/material/Box';
+import Checkbox from '@mui/material/Checkbox';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+import Typography from '@mui/material/Typography';
 
 import type { FileInfo } from '@/adapters/generated/files';
-import { getTagInfo } from '@/domain/constants/tags';
+
+import { FileTags } from './FileTags';
 
 interface FileListItemProps {
   file: FileInfo;
@@ -129,38 +136,7 @@ export const FileListItem = ({ file, isLast = false, searchQuery = '' }: FileLis
 
       {/* タグ */}
       <TableCell sx={{ width: '18%', p: 2 }}>
-        <Box
-          sx={{
-            display: 'flex',
-            gap: 0.67,
-            flexWrap: 'wrap',
-            alignContent: 'flex-start',
-          }}
-        >
-          {file.tagIds &&
-            file.tagIds.map((tagId) => {
-              const tag = getTagInfo(tagId);
-              return (
-                <Chip
-                  key={tag.id}
-                  label={tag.name}
-                  size="small"
-                  sx={{
-                    backgroundColor: tag.backgroundColor,
-                    color: tag.color,
-                    fontWeight: 500,
-                    fontSize: '12px',
-                    height: '24px',
-                    borderRadius: '6px',
-                    padding: '2px 8px',
-                    '& .MuiChip-label': {
-                      padding: '0',
-                    },
-                  }}
-                />
-              );
-            })}
-        </Box>
+        <FileTags tagIds={file.tagIds} />
       </TableCell>
 
       {/* アップロード日時 */}

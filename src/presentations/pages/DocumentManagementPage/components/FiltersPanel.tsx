@@ -1,12 +1,12 @@
+import DateRangeIcon from '@mui/icons-material/DateRange';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import DateRangeIcon from '@mui/icons-material/DateRange';
-import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 
-import { getAllTags } from '@/domain/constants/tags';
+import { TagSelector } from '@/presentations/components/files';
 
 interface FiltersPanelProps {
   selectedTags: string[];
@@ -59,33 +59,7 @@ export const FiltersPanel: React.FC<FiltersPanelProps> = ({
             +
           </Button>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-          {getAllTags().map((tag) => {
-            const isSelected = selectedTags.includes(tag.id);
-            return (
-              <Box
-                key={tag.id}
-                onClick={() => onToggleTag(tag.id)}
-                sx={{
-                  px: 1.667,
-                  py: 0.667,
-                  borderRadius: '8px',
-                  border: `0.667px solid ${tag.backgroundColor}`,
-                  backgroundColor: isSelected ? tag.backgroundColor : '#fff',
-                  color: isSelected ? tag.color : tag.backgroundColor,
-                  fontSize: '12px',
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                  fontFamily: "'Arimo', 'Noto Sans JP', sans-serif",
-                  transition: 'all 0.2s ease',
-                  '&:hover': { backgroundColor: tag.backgroundColor, color: tag.color },
-                }}
-              >
-                {tag.name}
-              </Box>
-            );
-          })}
-        </Box>
+        <TagSelector selectedTags={selectedTags} onToggleTag={onToggleTag} />
       </Paper>
 
       <Paper

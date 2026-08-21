@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -10,11 +10,11 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import { useQueryClient } from '@tanstack/react-query';
 
-import { useUploadFiles } from '@/presentations/hooks/mutations/useUploadFiles';
 import { updateFile } from '@/adapters/generated/files';
-import { getAllTags } from '@/domain/constants/tags';
+import { TagSelector } from '@/presentations/components/files';
+import { useUploadFiles } from '@/presentations/hooks/mutations/useUploadFiles';
 
 const ALLOWED_EXTENSIONS = ['pdf', 'docx', 'xlsx', 'jpg', 'png'];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -286,38 +286,16 @@ export const UploadDialog: React.FC<UploadDialogProps> = ({ open, onClose }) => 
               タグを選択
             </Typography>
           </Box>
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            {getAllTags().map((tag) => {
-              const isSelected = selectedTags.includes(tag.id);
-              return (
-                <Box
-                  key={tag.id}
-                  onClick={() =>
-                    setSelectedTags((prev) =>
-                      prev.includes(tag.id)
-                        ? prev.filter((id) => id !== tag.id)
-                        : [...prev, tag.id]
-                    )
-                  }
-                  sx={{
-                    px: 1.5,
-                    py: 0.5,
-                    borderRadius: '8px',
-                    border: `0.667px solid ${tag.backgroundColor}`,
-                    backgroundColor: isSelected ? tag.backgroundColor : '#fff',
-                    color: isSelected ? tag.color : tag.backgroundColor,
-                    fontSize: '12px',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    '&:hover': { backgroundColor: tag.backgroundColor, color: tag.color },
-                  }}
-                >
-                  {tag.name}
-                </Box>
-              );
-            })}
-          </Box>
+          <TagSelector
+            selectedTags={selectedTags}
+            onToggleTag={(tagId) =>
+              setSelectedTags((prev) =>
+                prev.includes(tagId)
+                  ? prev.filter((id) => id !== tagId)
+                  : [...prev, tagId],
+              )
+            }
+          />
         </Box>
       </DialogContent>
 

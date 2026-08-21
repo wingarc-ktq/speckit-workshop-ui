@@ -1,17 +1,20 @@
-import Box from '@mui/material/Box';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+
+import Box from '@mui/material/Box';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { useDebounce } from 'use-debounce';
 
-import { FiltersPanel } from './components/FiltersPanel';
+import { useFileListQuery } from '@/presentations/hooks/queries/files/useFileListQuery';
+import { useDocumentManagementState } from '@/presentations/hooks/useDocumentManagementState';
+
 import { FileListContent, PAGE_SIZE } from './components/FileListContent';
+import { FiltersPanel } from './components/FiltersPanel';
 import { PaginationControls } from './components/PaginationControls';
 import { SearchBar } from './components/SearchBar';
 import { SortToolbar } from './components/SortToolbar';
 import { UploadDialog } from './components/UploadDialog';
-import { useDocumentManagementState } from '@/presentations/hooks/useDocumentManagementState';
-import { useFileListQuery } from '@/presentations/hooks/queries/files/useFileListQuery';
+import { filterFiles } from './utils/filterFiles';
 
 export const DocumentManagementPage: React.FC = () => {
   const { t } = useTranslation();
@@ -47,33 +50,8 @@ export const DocumentManagementPage: React.FC = () => {
   const { data } = useFileListQuery({ search: debouncedSearchQuery });
   const filteredCount = useMemo(() => {
     if (!data?.files) return 0;
-    
-    let filtered = [...data.files];
-    
-    if (selectedTags.length > 0) {
-      filtered = filtered.filter((file) =>
-        file.tagIds ? selectedTags.some((tag) => file.tagIds?.includes(tag)) : false,
-      );
-    }
-    
-    if (startDate || endDate) {
-      filtered = filtered.filter((file) => {
-        const fileDate = new Date(file.uploadedAt);
-        if (startDate) {
-          const start = new Date(startDate);
-          start.setHours(0, 0, 0, 0);
-          if (fileDate < start) return false;
-        }
-        if (endDate) {
-          const end = new Date(endDate);
-          end.setHours(23, 59, 59, 999);
-          if (fileDate > end) return false;
-        }
-        return true;
-      });
-    }
-    
-    return filtered.length;
+
+    return filterFiles(data.files, { selectedTags, startDate, endDate }).length;
   }, [data?.files, selectedTags, startDate, endDate]);
 
   return (

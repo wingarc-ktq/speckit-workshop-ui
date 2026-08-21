@@ -1,14 +1,19 @@
-import { Box, Card, CardContent, CardMedia, Typography, Chip, Checkbox } from '@mui/material';
-import {
-  Description as DescriptionIcon,
-  FilePresent as FilePresentIcon,
-  DataObject as DataObjectIcon,
-  Image as ImageIcon,
-} from '@mui/icons-material';
 import { useState } from 'react';
 
+import DataObjectIcon from '@mui/icons-material/DataObject';
+import DescriptionIcon from '@mui/icons-material/Description';
+import FilePresentIcon from '@mui/icons-material/FilePresent';
+import ImageIcon from '@mui/icons-material/Image';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardMedia from '@mui/material/CardMedia';
+import Checkbox from '@mui/material/Checkbox';
+import Typography from '@mui/material/Typography';
+
 import type { FileInfo } from '@/adapters/generated/files';
-import { getTagInfo } from '@/domain/constants/tags';
+
+import { FileTags } from './FileTags';
 
 interface DocumentGridViewProps {
   files: FileInfo[];
@@ -196,30 +201,8 @@ export const DocumentGridView: React.FC<DocumentGridViewProps> = ({ files }) => 
               </Typography>
 
               {/* タグ */}
-              <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1 }}>
-                {file.tagIds &&
-                  file.tagIds.map((tagId) => {
-                    const tag = getTagInfo(tagId);
-                    return (
-                      <Chip
-                        key={tag.id}
-                        label={tag.name}
-                        size="small"
-                        sx={{
-                          backgroundColor: tag.backgroundColor,
-                          color: tag.color,
-                          fontWeight: 500,
-                          fontSize: '12px',
-                          height: '24px',
-                          borderRadius: '6px',
-                          padding: '2px 8px',
-                          '& .MuiChip-label': {
-                            padding: '0',
-                          },
-                        }}
-                      />
-                    );
-                  })}
+              <Box sx={{ mb: 1 }}>
+                <FileTags tagIds={file.tagIds} />
               </Box>
 
               {/* ファイル情報（サイズと日付） */}

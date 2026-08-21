@@ -4,6 +4,8 @@ import { DocumentGridView, FileList } from '@/presentations/components/files';
 import { useFileListQuery } from '@/presentations/hooks/queries/files/useFileListQuery';
 import type { SortBy, SortOrder, ViewMode } from '@/presentations/hooks/useDocumentManagementState';
 
+import { filterFiles } from '../utils/filterFiles';
+
 export const PAGE_SIZE = 20;
 
 export interface FileListContentProps {
@@ -40,30 +42,7 @@ export const FileListContent: React.FC<FileListContentProps> = ({
     return <Box sx={{ p: 2 }}>データがありません</Box>;
   }
 
-  let filteredFiles = [...data.files];
-
-  if (selectedTags.length > 0) {
-    filteredFiles = filteredFiles.filter((file) =>
-      file.tagIds ? selectedTags.some((tag) => file.tagIds?.includes(tag)) : false,
-    );
-  }
-
-  if (startDate || endDate) {
-    filteredFiles = filteredFiles.filter((file) => {
-      const fileDate = new Date(file.uploadedAt);
-      if (startDate) {
-        const start = new Date(startDate);
-        start.setHours(0, 0, 0, 0);
-        if (fileDate < start) return false;
-      }
-      if (endDate) {
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
-        if (fileDate > end) return false;
-      }
-      return true;
-    });
-  }
+  const filteredFiles = filterFiles(data.files, { selectedTags, startDate, endDate });
 
   const sortedFiles = [...filteredFiles].sort((a, b) => {
     if (sortBy === 'name') {
