@@ -1,11 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { uploadFile } from '@/adapters/repositories/files';
-import type { UploadFileBody } from '@/adapters/generated/files';
-import { QUERY_KEYS } from '../queries/constants';
+import type { UploadFileBody, FileResponse } from '@/adapters/generated/files';
 
 interface UseUploadFilesOptions {
-  onSuccess?: () => void;
+  onSuccess?: (data: FileResponse) => void | Promise<void>;
   onError?: (error: Error) => void;
 }
 
@@ -23,10 +22,18 @@ export const useUploadFiles = (options?: UseUploadFilesOptions) => {
       };
       return uploadFile(body);
     },
-    onSuccess: () => {
-      // アップロード成功時にファイル一覧キャッシュを無効化
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.FILES.LIST });
-      options?.onSuccess?.();
+    onSuccess: async (data) => {
+      // アップロード成功時にファイル一覧キャッシュを無効化（検索パラメータに関わらず）
+      await queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const queryKey = query.queryKey as unknown[];
+          return Array.isArray(queryKey) && 
+                 Array.isArray(queryKey[0]) && 
+                 queryKey[0].includes('files') && 
+                 queryKey[0].includes('list');
+        }
+      });
+      await options?.onSuccess?.(data);
     },
     onError: (error: Error) => {
       options?.onError?.(error);

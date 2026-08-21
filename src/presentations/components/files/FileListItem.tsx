@@ -67,8 +67,8 @@ export const FileListItem = ({ file, isLast = false, searchQuery = '' }: FileLis
         <Box
           component="span"
           sx={{
-            backgroundColor: '#fbbf24',
-            color: '#1f2937',
+            backgroundColor: '#fef9c3',
+            color: '#854d0e',
             fontWeight: 600,
             padding: '0 2px',
           }}

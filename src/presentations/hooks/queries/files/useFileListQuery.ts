@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import { useRepository } from '@/app/providers/RepositoryProvider';
 import type { GetFilesParams } from '@/adapters/generated/files';
@@ -15,8 +15,9 @@ export const useFileListQuery = (params?: GetFilesParams) => {
     files: { getFiles },
   } = useRepository();
 
-  return useSuspenseQuery({
+  return useQuery({
     queryKey: [QUERY_KEYS.FILES.LIST, params],
     queryFn: () => getFiles(params),
+    placeholderData: (previousData) => previousData, // 前のデータを保持してちらつき防止
   });
 };

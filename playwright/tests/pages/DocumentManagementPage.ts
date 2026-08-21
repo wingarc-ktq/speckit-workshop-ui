@@ -143,4 +143,15 @@ export class DocumentManagementPage extends BasePage {
     const nameCell = row.locator('td').nth(1);
     return nameCell.textContent();
   }
+
+  /**
+   * 「アップロード」ボタンをクリック
+   */
+  async clickUploadButton() {
+    const uploadButton = this.page.getByRole('button', {
+      name: 'アップロード',
+      exact: true,
+    });
+    await uploadButton.click();
+  }
 }
