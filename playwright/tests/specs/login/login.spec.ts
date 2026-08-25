@@ -25,10 +25,10 @@ test.describe('ログイン', () => {
     // 4. 「ログイン」ボタンをクリックする
     await loginPage.clickLoginButton();
 
-    // 5. ダッシュボードページに遷移すること
+    // 5. マイファイル（ダッシュボード）ページに遷移すること
     await expect(page).toHaveURL('/');
 
-    // 6. 「ダッシュボード」という見出しが表示されること
+    // 6. 「最近使用したファイル」という見出しが表示されること
     await expect(await dashboardPage.getDashboardHeading()).toBeVisible();
   });
 
@@ -55,7 +55,7 @@ test.describe('ログイン', () => {
     // 6. 「ログイン」ボタンをクリックする
     await loginPage.clickLoginButton();
 
-    // 7. ダッシュボードページに遷移すること
+    // 7. マイファイル（ダッシュボード）ページに遷移すること
     await expect(page).toHaveURL('/');
   });
 });

@@ -15,22 +15,22 @@ export class DashboardPage extends BasePage {
    * ダッシュボードページが表示されているか確認
    */
   async isDashboardPage() {
-    return this.page
-      .getByRole('heading', { name: 'ダッシュボード', level: 1 })
-      .isVisible();
+    return this.page.getByTestId('filesPage').isVisible();
   }
 
   /**
    * ダッシュボードの見出しを取得
    */
   async getDashboardHeading() {
-    return this.page.getByRole('heading', { name: 'ダッシュボード', level: 1 });
+    return this.page
+      .getByTestId('recentFilesSection')
+      .getByText('最近使用したファイル', { exact: true });
   }
 
   /**
    * サイドバーのダッシュボードリンクが表示されているか確認
    */
   async isSidebarVisible() {
-    return this.page.getByRole('link', { name: 'ダッシュボード' }).isVisible();
+    return this.page.getByRole('link', { name: 'マイファイル' }).isVisible();
   }
 }

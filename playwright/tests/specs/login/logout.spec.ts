@@ -35,10 +35,10 @@ test.describe('ログアウト', () => {
     // 4. 「ログイン」ボタンをクリックする
     await loginPage.clickLoginButton();
 
-    // 5. ダッシュボードページに遷移すること
+    // 5. マイファイル（ダッシュボード）ページに遷移すること
     await expect(page).toHaveURL('/');
 
-    // 6. 「ダッシュボード」という見出しが表示されること
+    // 6. 「最近使用したファイル」という見出しが表示されること
     await expect(await dashboardPage.getDashboardHeading()).toBeVisible();
 
     // 7. ユーザーメニューボタン（アバター）をクリックする
@@ -71,10 +71,10 @@ test.describe('ログアウト', () => {
     // 4. 「ログイン」ボタンをクリックする
     await loginPage.clickLoginButton();
 
-    // 5. ダッシュボードページに遷移すること
+    // 5. マイファイル（ダッシュボード）ページに遷移すること
     await expect(page).toHaveURL('/');
 
-    // 6. 「ダッシュボード」という見出しが表示されること
+    // 6. 「最近使用したファイル」という見出しが表示されること
     await expect(await dashboardPage.getDashboardHeading()).toBeVisible();
 
     // 7. ユーザーメニューボタン（アバター）をクリックする
@@ -86,7 +86,7 @@ test.describe('ログアウト', () => {
     // 9. ログインページ（/login）にリダイレクトされること
     await expect(page).toHaveURL('/login');
 
-    // 10. ダッシュボードページ（/）に直接アクセスする
+    // 10. マイファイル（ダッシュボード）ページ（/）に直接アクセスする
     await page.goto('/');
 
     // 11. 再度ログインページ（/login）にリダイレクトされること
