@@ -1,5 +1,14 @@
 # Spec Kit Workshop
 
+> **このブランチ（`002-document-management-uratachihaya`）の独自実装について**
+>
+> Day 2 のサンプル実装を起点に、E2E テストと独自機能を追加しています。詳細は [独自実装](#-独自実装-uratachihaya) を参照してください。
+>
+> - 🌙 **ダークテーマ + 切替機能** — Raycast 風の配色。選択は `localStorage` に保存
+> - ⌘ **コマンドパレット（⌘K / Ctrl+K）** — どの画面からでもファイルを検索。キーボードのみで操作可能
+> - 🧪 **E2E テスト 9 件を新規追加** — 文書一覧 6 件 + コマンドパレット 3 件（全 15 件パス）
+> - 📓 **学習ノート** — [Day 0〜2](./docs/learning-note-day0-2.html) / [Day 3](./docs/learning-note-day3.html)
+
 ## 📖 概要
 
 このプロジェクトは、モダンな感じを目指したReact + TypeScript + Material-UI (MUI)を使用したWebアプリケーションです。認証機能、多言語対応、テスト環境、MSW（Mock Service Worker）を使ったモックAPI、Figma MCPサーバーとの連携などの機能を含んでいます。
@@ -12,6 +21,63 @@
 - 🎭 **モックAPI**: MSW による開発時のAPIモック
 - 🎨 **Figma連携**: MCP サーバーによるデザインアセット取得
 - 📱 **レスポンシブデザイン**: モバイル・デスクトップ対応（そんなにできてない）
+
+## 🚀 独自実装 (uratachihaya)
+
+Day 2 のサンプル実装（`002-document-management-day2`）を起点に追加した機能です。
+
+### 🌙 ダークテーマ
+
+Raycast 風の配色でアプリ全体をダークテーマ化し、ヘッダーのボタンでライト/ダークを切り替えられるようにしました。選択したモードは `localStorage` に保存され、リロード後も維持されます。既存の言語切替（i18n）と同じ構造で実装しています。
+
+| ファイル | 役割 |
+| --- | --- |
+| `src/app/providers/ThemeProvider/config.ts` | ライト/ダーク 2 つのテーマ定義 |
+| `src/app/providers/ThemeProvider/context.ts` | モードと切替関数の Context |
+| `src/app/providers/ThemeProvider/hooks/useThemeMode.ts` | モード取得・切替フック |
+
+### ⌘ コマンドパレット
+
+`⌘K`（Mac）/ `Ctrl+K`（Windows・Linux）で開く検索モーダルです。どの画面からでも呼び出せ、キーボードだけで文書を探して開けます。
+
+- `↑` `↓` で候補を移動、`Enter` で詳細を表示、`Esc` で閉じる
+- 検索は既存の `useFiles` フックを流用（新規 API なし）
+- 既存レイアウトには手を入れず、`AppLayout` にオーバーレイとして追加
+
+実装は `src/presentations/components/CommandPalette/` にあります。
+
+### 🧪 E2E テスト
+
+Playwright MCP で実画面を調査しながら、マークダウン仕様書 → Page Object → テストコードの順に作成しました。
+
+| 仕様書 | テスト | 件数 |
+| --- | --- | --- |
+| `playwright/tests/specs/files/file-list.md` | `file-list.spec.ts` | 6 |
+| `playwright/tests/specs/command-palette/command-palette.md` | `command-palette.spec.ts` | 3 |
+
+既存の 6 件と合わせて **15 件すべてパス**します。
+
+```bash
+PLAYWRIGHT_WORKERS=2 pnpm test:e2e:chromium
+```
+
+> **Note**
+> 並列ワーカー数を指定しないと、WSL 環境では Chromium の多重起動で dev サーバーが詰まりタイムアウトすることがあります。
+
+### 🔧 本体側の改修
+
+E2E テストの安定性のため、以下を追加しています（プロジェクト憲法 IV「`data-testid` を使用する」に準拠）。
+
+- `AppHeader.tsx` の検索フィールドに `data-testid="searchField"`
+- 検索クリアボタンに `data-testid="searchClearButton"`
+  - MUI がアイコンに自動付与する `data-testid` は `NODE_ENV !== 'production'` の時のみで本番ビルドでは消えるため、明示的に付与
+
+### 📓 学習ノート
+
+3 日間の内容を初学者向けにまとめた HTML ドキュメントです。ブラウザで直接開けます。
+
+- [Day 0〜2: 仕様書からアプリを作る Spec Kit ワークフロー](./docs/learning-note-day0-2.html)
+- [Day 3: 誰が、なぜ、何をしたのか — E2E テストができるまで](./docs/learning-note-day3.html)
 
 ## 🛠 技術スタック
 
