@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spec Kit 学習ノート — Day 3 E2Eテスト</title>
+<style>
+  :root {
+    --bg: #FAF8F5;
+    --card: #FFFFFF;
+    --text: #33383F;
+    --text-soft: #6B7280;
+    --accent: #2C6E9B;
+    --accent-soft: #E8F1F7;
+    --warn: #B4762C;
+    --warn-soft: #FDF4E7;
+    --good: #3D7A55;
+    --good-soft: #EAF4EE;
+    --purple: #6B5B95;
+    --purple-soft: #F0EDF6;
+    --line: #E6E2DC;
+    --code-bg: #2B303B;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif;
+    line-height: 1.9;
+    font-size: 16px;
+  }
+
+  .wrap { max-width: 900px; margin: 0 auto; padding: 72px 32px 120px; }
+
+  header.hero {
+    margin-bottom: 72px;
+    padding-bottom: 40px;
+    border-bottom: 2px solid var(--line);
+  }
+
+  .eyebrow {
+    display: inline-block;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-weight: 600;
+    margin-bottom: 24px;
+  }
+
+  h1 { font-size: 38px; line-height: 1.4; margin: 0 0 20px; letter-spacing: -0.01em; }
+  .subtitle { font-size: 18px; color: var(--text-soft); margin: 0; }
+
+  h2 {
+    font-size: 27px;
+    margin: 80px 0 12px;
+    padding-left: 16px;
+    border-left: 5px solid var(--accent);
+    line-height: 1.5;
+  }
+
+  h2 .num {
+    display: block;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  h3 { font-size: 20px; margin: 44px 0 14px; }
+  h4 { font-size: 16px; margin: 28px 0 10px; color: var(--accent); }
+
+  p { margin: 0 0 20px; }
+  ul, ol { margin: 0 0 20px; padding-left: 26px; }
+  li { margin-bottom: 10px; }
+
+  .lead { font-size: 17px; color: var(--text-soft); margin-bottom: 36px; }
+
+  .card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 40px 44px;
+    margin: 32px 0;
+    box-shadow: 0 2px 4px rgba(50,45,40,.04), 0 10px 30px rgba(50,45,40,.07);
+  }
+  .card > :first-child { margin-top: 0; }
+  .card > :last-child { margin-bottom: 0; }
+
+  /* なぜカード */
+  .why {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 36px 40px;
+    margin: 28px 0;
+    box-shadow: 0 2px 4px rgba(50,45,40,.04), 0 10px 30px rgba(50,45,40,.07);
+    border-top: 5px solid var(--accent);
+  }
+  .why > :first-child { margin-top: 0; }
+  .why > :last-child { margin-bottom: 0; }
+
+  .why .q {
+    display: flex;
+    gap: 14px;
+    align-items: baseline;
+    margin: 0 0 20px;
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+
+  .why .q .mark {
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+    margin-top: 3px;
+  }
+
+  .answer {
+    background: var(--accent-soft);
+    border-radius: 10px;
+    padding: 18px 24px;
+    margin: 20px 0 24px;
+    font-weight: 600;
+    color: #1F5478;
+  }
+  .answer p { margin: 0; }
+
+  .icon { font-size: 26px; line-height: 1; }
+
+  table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 15px; }
+  th, td { text-align: left; padding: 14px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 13px; letter-spacing: 0.06em; }
+  tr:last-child td { border-bottom: none; }
+  td.real { width: 32%; font-weight: 600; }
+  td.arrow { width: 6%; text-align: center; color: var(--text-soft); }
+
+  /* 役割カード */
+  .roles { display: grid; gap: 18px; margin: 32px 0; }
+
+  .role {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 28px 32px;
+    box-shadow: 0 2px 4px rgba(50,45,40,.04), 0 10px 30px rgba(50,45,40,.07);
+    border-left: 6px solid var(--accent);
+  }
+
+  .role.human { border-left-color: var(--good); }
+  .role.claude { border-left-color: var(--purple); }
+  .role.mcp { border-left-color: var(--warn); }
+  .role.runner { border-left-color: var(--accent); }
+
+  .role .who {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 19px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .role .tagline { font-size: 14px; color: var(--text-soft); margin: 0 0 16px; }
+
+  .role dl { margin: 0; display: grid; grid-template-columns: 130px 1fr; gap: 8px 16px; font-size: 15px; }
+  .role dt { font-weight: 700; color: var(--text-soft); font-size: 13px; padding-top: 3px; }
+  .role dd { margin: 0; }
+
+  .role .miss { color: var(--warn); }
+
+  /* タイムライン */
+  .timeline { margin: 32px 0; }
+
+  .tl-row {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 20px;
+    padding: 22px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .tl-row:last-child { border-bottom: none; }
+
+  .tl-step {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    padding-top: 4px;
+  }
+
+  .tl-body h4 { margin: 0 0 8px; font-size: 17px; color: var(--text); }
+  .tl-body p { margin: 0 0 12px; font-size: 15px; }
+  .tl-body p:last-child { margin-bottom: 0; }
+
+  .actors { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+
+  .chip {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .chip.human { background: var(--good-soft); color: var(--good); }
+  .chip.claude { background: var(--purple-soft); color: var(--purple); }
+  .chip.mcp { background: var(--warn-soft); color: var(--warn); }
+  .chip.runner { background: var(--accent-soft); color: var(--accent); }
+
+  pre {
+    background: var(--code-bg);
+    color: #DCE0E8;
+    padding: 24px 26px;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-size: 13.5px;
+    line-height: 2;
+    margin: 18px 0 26px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  pre .c { color: #7E8AA0; font-style: italic; }
+  pre .k { color: #C6A0F6; }
+  pre .s { color: #A6DA95; }
+  pre .f { color: #8AADF4; }
+  pre .n { color: #F5A97F; }
+
+  code.inline {
+    background: #EFECE7;
+    padding: 3px 7px;
+    border-radius: 5px;
+    font-size: 14px;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    color: #8B4A2F;
+  }
+
+  .filename {
+    display: inline-block;
+    background: #3A404C;
+    color: #C9D0DC;
+    font-size: 12.5px;
+    padding: 6px 14px;
+    border-radius: 8px 8px 0 0;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    margin-bottom: -18px;
+    position: relative;
+    z-index: 1;
+  }
+  .filename + pre { border-top-left-radius: 0; }
+
+  .note { border-radius: 10px; padding: 22px 26px; margin: 26px 0; font-size: 15px; }
+  .note strong { display: block; margin-bottom: 6px; }
+  .note.warn { background: var(--warn-soft); border-left: 5px solid var(--warn); }
+  .note.warn strong { color: var(--warn); }
+  .note.good { background: var(--good-soft); border-left: 5px solid var(--good); }
+  .note.good strong { color: var(--good); }
+  .note p:last-child { margin-bottom: 0; }
+  .note ul { margin-bottom: 0; }
+
+  .learn {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 32px 36px;
+    margin: 22px 0;
+    box-shadow: 0 2px 4px rgba(50,45,40,.04), 0 10px 30px rgba(50,45,40,.07);
+  }
+  .learn h4 { margin: 0 0 12px; font-size: 18px; color: var(--text); display: flex; gap: 12px; align-items: baseline; }
+  .learn h4 .badge {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .learn h4 .badge.trip { background: var(--warn-soft); color: var(--warn); }
+  .learn p:last-child { margin-bottom: 0; }
+
+  .result { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin: 28px 0; }
+  .result div {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 22px 20px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(50,45,40,.04), 0 8px 22px rgba(50,45,40,.06);
+  }
+  .result .big { display: block; font-size: 30px; font-weight: 700; color: var(--good); line-height: 1.3; }
+  .result .cap { display: block; font-size: 13px; color: var(--text-soft); margin-top: 4px; }
+
+  footer {
+    margin-top: 100px;
+    padding-top: 32px;
+    border-top: 2px solid var(--line);
+    color: var(--text-soft);
+    font-size: 14px;
+  }
+
+  @media (max-width: 640px) {
+    .wrap { padding: 48px 20px 80px; }
+    h1 { font-size: 29px; }
+    h2 { font-size: 23px; }
+    .card, .why, .learn, .role { padding: 28px 24px; }
+    td.real { width: auto; }
+    .role dl { grid-template-columns: 1fr; gap: 2px 0; }
+    .role dt { padding-top: 10px; }
+    .tl-row { grid-template-columns: 1fr; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <span class="eyebrow">WingArc1st インターン / Day 3</span>
+  <h1>誰が、なぜ、何をしたのか<br>— E2Eテストができるまで</h1>
+  <p class="subtitle">「AI がテストを書いてくれた」で終わらせないための記録。Playwright MCP・Claude・Playwright 本体・自分、4者の役割分担と、すべての判断の理由。</p>
+</header>
+
+<h2><span class="num">SECTION 01</span>まず、登場人物を整理する</h2>
+
+<p class="lead">Day 3 でいちばん混乱しやすいのは、<strong>「Playwright」という名前が2回出てくる</strong>ことです。しかもこの2つは、まったく別の場面で使う別物です。ここを整理しないと、何が起きたのか永久に分かりません。</p>
+
+<div class="roles">
+
+  <div class="role human">
+    <div class="who"><span class="icon">&#128100;</span>自分（人間）</div>
+    <p class="tagline">何をテストするか決める人</p>
+    <dl>
+      <dt>やったこと</dt>
+      <dd>テスト対象を「検索と一覧表示」に絞る判断。仕様と実装がズレていたときの扱いを決定。AIの成果物をレビューして修正を指示。</dd>
+      <dt>いつ</dt>
+      <dd>全工程。特に「方針を決める」場面。</dd>
+      <dt>いないと</dt>
+      <dd class="miss">AIが的外れなものを大量に作る。「全部テストする」は「何もテストしない」と同じくらい役に立たない。</dd>
+    </dl>
+  </div>
+
+  <div class="role claude">
+    <div class="who"><span class="icon">&#129302;</span>Claude Code</div>
+    <p class="tagline">調べて、考えて、コードを書く人</p>
+    <dl>
+      <dt>やったこと</dt>
+      <dd>画面を調査し、テスト仕様書・Page Object・テストコードを執筆。失敗したら原因を特定して自力で修正。</dd>
+      <dt>いつ</dt>
+      <dd>開発中のみ。完成したテストの実行には関与しない。</dd>
+      <dt>いないと</dt>
+      <dd class="miss">全部手で書くことになる。今日の作業量なら丸一日では終わらない。</dd>
+    </dl>
+  </div>
+
+  <div class="role mcp">
+    <div class="who"><span class="icon">&#128065;</span>Playwright <strong>MCP</strong></div>
+    <p class="tagline">Claude に「目」を与える道具</p>
+    <dl>
+      <dt>やったこと</dt>
+      <dd>Claude の指示でブラウザを開き、ログインし、画面のHTML構造を読み取って Claude に渡した。</dd>
+      <dt>いつ</dt>
+      <dd><strong>開発中だけ。</strong>仕様書とPage Objectを作るときの調査用。</dd>
+      <dt>いないと</dt>
+      <dd class="miss">Claude が画面を見られないので、セレクタを<strong>想像で書く</strong>。当然どこにも一致せず全滅する。</dd>
+    </dl>
+  </div>
+
+  <div class="role runner">
+    <div class="who"><span class="icon">&#9654;</span>Playwright（テスト実行ツール）</div>
+    <p class="tagline">完成したテストを実際に走らせる人</p>
+    <dl>
+      <dt>やったこと</dt>
+      <dd><code class="inline">pnpm test:e2e:chromium</code> で12件のテストを実行。ブラウザを起動し、クリック・入力を再現し、合否を判定。</dd>
+      <dt>いつ</dt>
+      <dd><strong>テスト実行時。</strong>今後も毎回これが動く。</dd>
+      <dt>いないと</dt>
+      <dd class="miss">テストコードがあっても動かせない。ただの文字列。</dd>
+    </dl>
+  </div>
+
+</div>
+
+<div class="note warn">
+  <strong>最重要：Playwright MCP はテストコードに1行も登場しない</strong>
+  <p>MCP は<strong>開発中の下調べ専用</strong>です。完成した <code class="inline">file-list.spec.ts</code> の中に <code class="inline">mcp</code> という文字は一度も出てきません。今後このテストを実行するとき、MCP は一切必要ありません。</p>
+  <p style="margin-top:12px">言い換えると — <strong>MCP は「工事中の足場」</strong>。建物が完成したら外す。建物（テスト）自体は足場なしで立っています。</p>
+</div>
+
+<h3>4者の関係を一枚で</h3>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr><th>役者</th><th>たとえるなら</th><th>開発中</th><th>テスト実行時</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="real">自分</td>
+        <td>設計を承認する監督</td>
+        <td style="color:var(--good);font-weight:700">◎ 判断する</td>
+        <td>結果を見る</td>
+      </tr>
+      <tr>
+        <td class="real">Claude Code</td>
+        <td>設計図を描く技師</td>
+        <td style="color:var(--good);font-weight:700">◎ 書く</td>
+        <td style="color:var(--text-soft)">— 不要</td>
+      </tr>
+      <tr>
+        <td class="real">Playwright MCP</td>
+        <td>現場を測る巻尺</td>
+        <td style="color:var(--good);font-weight:700">◎ 調べる</td>
+        <td style="color:var(--text-soft)">— 不要</td>
+      </tr>
+      <tr>
+        <td class="real">Playwright 本体</td>
+        <td>実際に動く検査ロボット</td>
+        <td style="color:var(--text-soft)">— 出番なし</td>
+        <td style="color:var(--good);font-weight:700">◎ 実行する</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<h2><span class="num">SECTION 02</span>4時間の流れ — どの場面で誰が動いたか</h2>
+
+<div class="timeline">
+
+  <div class="tl-row">
+    <div class="tl-step">STEP 1</div>
+    <div class="tl-body">
+      <div class="actors">
+        <span class="chip human">自分</span>
+        <span class="chip claude">Claude</span>
+        <span class="chip mcp">MCP</span>
+      </div>
+      <h4>実物の画面を調べる</h4>
+      <p><strong>自分が</strong>「検索と一覧表示に絞る」と決め、<strong>Claude に</strong>調査を指示。<strong>Claude が MCP を使って</strong>ブラウザを開き、ログインし、画面構造を読み取った。</p>
+      <p style="color:var(--text-soft);font-size:14px">この時点で、資料に書いていない挙動が5つ見つかった（URL・デバウンス・ページ件数・未実装機能・検索対象）。所要11分。</p>
+    </div>
+  </div>
+
+  <div class="tl-row">
+    <div class="tl-step">STEP 2</div>
+    <div class="tl-body">
+      <div class="actors">
+        <span class="chip claude">Claude</span>
+        <span class="chip human">自分</span>
+      </div>
+      <h4>テスト仕様書を日本語で書く</h4>
+      <p><strong>Claude が</strong>調査結果をもとに <code class="inline">file-list.md</code> を執筆。<strong>自分が</strong>レビューし、4点の修正を指示（デバウンス待機の明記、前提データの削減、testid の使用、事後処理の追加）。</p>
+      <p style="color:var(--text-soft);font-size:14px">コードはまだ1行も書いていない。</p>
+    </div>
+  </div>
+
+  <div class="tl-row">
+    <div class="tl-step">STEP 3</div>
+    <div class="tl-body">
+      <div class="actors">
+        <span class="chip claude">Claude</span>
+        <span class="chip mcp">MCP</span>
+      </div>
+      <h4>Page Object を作る</h4>
+      <p><strong>Claude が再び MCP で</strong>画面のDOMを詳細に確認しながら <code class="inline">FileListPage.ts</code> を作成。ついでに本体コード（<code class="inline">AppHeader.tsx</code>）に <code class="inline">data-testid</code> を追加した。</p>
+    </div>
+  </div>
+
+  <div class="tl-row">
+    <div class="tl-step">STEP 4</div>
+    <div class="tl-body">
+      <div class="actors">
+        <span class="chip claude">Claude</span>
+        <span class="chip runner">Playwright</span>
+      </div>
+      <h4>テストを書いて、走らせて、直す</h4>
+      <p><strong>Claude が</strong> <code class="inline">file-list.spec.ts</code> を執筆し、<strong>Playwright 本体で</strong>実行。落ちた原因を調べ、待機処理の設計を作り直して再実行。この往復を25分繰り返した。</p>
+      <p style="color:var(--text-soft);font-size:14px">ここで初めて Playwright 本体（テスト実行ツール）が登場する。</p>
+    </div>
+  </div>
+
+  <div class="tl-row">
+    <div class="tl-step">STEP 5</div>
+    <div class="tl-body">
+      <div class="actors">
+        <span class="chip human">自分</span>
+        <span class="chip runner">Playwright</span>
+      </div>
+      <h4>手元で検証する</h4>
+      <p><strong>自分が</strong>実行して12/12成功を確認。並列数の問題を <code class="inline">PLAYWRIGHT_WORKERS=2</code> で回避し、レポートのパス設定が間違っていることも発見した。</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="result">
+  <div><span class="big">6</span><span class="cap">テストケース</span></div>
+  <div><span class="big">12/12</span><span class="cap">全テスト成功</span></div>
+  <div><span class="big">4</span><span class="cap">新規ファイル</span></div>
+  <div><span class="big">5</span><span class="cap">実装の問題を発見</span></div>
+</div>
+
+<h2><span class="num">SECTION 03</span>「なぜ？」で理解する仕組み</h2>
+
+<p class="lead">ここからは、今日の作業で下した判断を「なぜそうしたのか」から説明します。答えを知るより、理由を知るほうが応用が利きます。</p>
+
+<div class="why">
+  <p class="q"><span class="mark">?</span>なぜ AI にわざわざ画面を「見せる」必要があったのか</p>
+
+  <div class="answer">
+    <p>コードを読むだけでは、<strong>実行して初めて決まること</strong>が分からないから。</p>
+  </div>
+
+  <p>Claude はリポジトリのソースコードを全部読めます。それなら画面を見なくてもテストが書けそうに思えます。でも実際には書けません。</p>
+
+  <p><strong>たとえるなら、レシピを読んだだけで「盛り付けた皿の写真」は描けない</strong>のと同じです。材料と手順は分かっても、最終的にどう見えるかは作ってみないと分かりません。</p>
+
+  <table>
+    <thead>
+      <tr><th>コードから分かること</th><th>実際に見ないと分からないこと</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code class="inline">&lt;DataGrid&gt;</code> を使っている</td>
+        <td>そのDataGridが実際に吐き出すHTMLの構造（<code class="inline">data-rowindex</code> という属性が付くこと）</td>
+      </tr>
+      <tr>
+        <td>検索フィールドがある</td>
+        <td>入力から300ms後に検索が走ること</td>
+      </tr>
+      <tr>
+        <td>ルーティングの定義</td>
+        <td>ログイン後に実際に飛ぶURLが <code class="inline">/</code> であること</td>
+      </tr>
+      <tr>
+        <td>ページネーションの実装</td>
+        <td>1ページの既定が10件で、<code class="inline">"1–5 of 7"</code> という形式で表示されること</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Playwright MCP は、この右側の列を Claude に見せるための道具です。</strong>MCP がないと、Claude は左側の情報から右側を「推測」して書きます。推測なので当たりません。</p>
+
+  <div class="note good" style="margin-bottom:0">
+    <strong>実際に効いた場面</strong>
+    <p>資料には「<code class="inline">http://localhost:5173/files</code> のファイル一覧画面」と書いてありました。もし資料を信じて書いていたら、存在しないURLにアクセスして全テストが落ちていました。MCP で実際に開いたから、正しいURLが <code class="inline">/</code> だと分かったのです。</p>
+  </div>
+</div>
+
+<div class="why">
+  <p class="q"><span class="mark">?</span>なぜ先に日本語の仕様書を書いたのか</p>
+
+  <div class="answer">
+    <p>コードから書き始めると、<strong>「動いたからOK」に流れて、何を保証しているのか誰も説明できなくなる</strong>から。</p>
+  </div>
+
+  <p>テストコードをいきなり書くと、こういうことが起きます。「このテスト、何を確かめてるんだっけ？」「なんとなく通ってるから触らないでおこう」。テストが<strong>ブラックボックス</strong>になってしまう。</p>
+
+  <p>先に日本語で「何をどう操作したら、何が起きるべきか」を書いておくと、こうなります。</p>
+
+  <table>
+    <thead>
+      <tr><th>仕様書の見出し</th><th></th><th>テストコード</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="real">## 〜すること</td>
+        <td class="arrow">→</td>
+        <td><code class="inline">test('〜すること', ...)</code></td>
+      </tr>
+      <tr>
+        <td class="real">### 前提条件</td>
+        <td class="arrow">→</td>
+        <td><code class="inline">beforeEach()</code></td>
+      </tr>
+      <tr>
+        <td class="real">### 手順</td>
+        <td class="arrow">→</td>
+        <td>テスト本体</td>
+      </tr>
+      <tr>
+        <td class="real">### 事後処理</td>
+        <td class="arrow">→</td>
+        <td><code class="inline">afterEach()</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="margin-bottom:0"><strong>プログラムが読めない人でも、仕様書を見ればテスト内容が分かる。</strong>これが「マークダウン仕様書駆動」の目的です。テストは開発者だけのものではなく、チーム全体で「何を保証しているか」を共有するためのものだからです。</p>
+</div>
+
+<div class="why">
+  <p class="q"><span class="mark">?</span>なぜ操作を Page Object に分けたのか</p>
+
+  <div class="answer">
+    <p>画面が変わったときに、<strong>直す場所を1箇所に閉じ込める</strong>ため。</p>
+  </div>
+
+  <p><strong>テレビのリモコンを想像してください。</strong>私たちは「音量+」ボタンしか知りませんが、それで操作できます。もしリモコンがなく、毎回テレビの裏蓋を開けて配線を触れと言われたら大変です。</p>
+
+  <p>Page Object はこのリモコンにあたります。</p>
+
+  <pre><span class="c">// ❌ Page Object を使わない場合 — 6つのテストすべてにこう書く</span>
+<span class="k">await</span> page.<span class="f">getByTestId</span>(<span class="s">'searchField'</span>).<span class="f">fill</span>(<span class="s">'田中商事'</span>);
+<span class="k">await</span> page.<span class="f">waitForTimeout</span>(<span class="n">350</span>);
+
+<span class="c">// ⭕ Page Object を使う場合 — 意図だけを書く</span>
+<span class="k">await</span> fileListPage.<span class="f">search</span>(<span class="s">'田中商事'</span>);</pre>
+
+  <p>いま検索ボックスの <code class="inline">data-testid</code> が変わったとします。</p>
+
+  <ul>
+    <li><strong>使わない場合：</strong>6つのテストファイルを全部開いて、6箇所直す</li>
+    <li><strong>使う場合：</strong><code class="inline">FileListPage.ts</code> の <code class="inline">search()</code> の中を1箇所直すだけ。テストコードは無変更</li>
+  </ul>
+
+  <p style="margin-bottom:0"><strong>今日の時点では手間が増えたように見えます。</strong>クラスを作る作業が増えただけですから。効いてくるのは、画面が変わったとき・テストが増えたときです。テストが3つを超えたあたりから確実に元が取れます。</p>
+</div>
+
+<div class="why">
+  <p class="q"><span class="mark">?</span>なぜ表示されている文字ではなく <code>data-testid</code> で要素を探すのか</p>
+
+  <div class="answer">
+    <p>見た目は変わるけれど、<strong>テスト用の目印は変わらない</strong>から。</p>
+  </div>
+
+  <p><strong>スーパーのレジは、商品のパッケージデザインが変わっても正しく会計できます。</strong>見た目ではなくバーコードを読んでいるからです。</p>
+
+  <p>このアプリは日本語と英語を切り替えられます。つまり「ファイルを検索...」という文字は、いつでも "Search files..." に変わりうる。文字で探すテストは、その瞬間に全部落ちます。</p>
+
+  <table>
+    <thead>
+      <tr><th>探し方</th><th>壊れる条件</th><th>評価</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code class="inline">getByTestId('searchField')</code></td>
+        <td>開発者が意図的に消したときだけ</td>
+        <td style="color:var(--good);font-weight:700">◎ 最も安全</td>
+      </tr>
+      <tr>
+        <td><code class="inline">getByRole('button', {name:'Go to next page'})</code></td>
+        <td>MUIライブラリの仕様が変わったとき</td>
+        <td style="color:var(--good)">○ かなり安全</td>
+      </tr>
+      <tr>
+        <td><code class="inline">[role="row"][data-rowindex]</code></td>
+        <td>MUIの公開仕様が変わったとき</td>
+        <td style="color:var(--good)">○ 安全</td>
+      </tr>
+      <tr>
+        <td><code class="inline">.MuiDataGrid-row</code>（CSSクラス）</td>
+        <td>MUIのバージョンアップ</td>
+        <td style="color:var(--warn)">△ 危険</td>
+      </tr>
+      <tr>
+        <td><code class="inline">getByText('検索結果が見つかりませんでした')</code></td>
+        <td>言語切替・文言修正</td>
+        <td style="color:var(--warn);font-weight:700">✕ すぐ壊れる</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note good" style="margin-bottom:0">
+    <strong>なぜ本体のコードを書き換えてよかったのか</strong>
+    <p>検索ボックスには目印がなかったので、<code class="inline">AppHeader.tsx</code> に <code class="inline">data-testid="searchField"</code> を追加しました。「テストのために製品コードを変えるのは邪道では？」と思うかもしれませんが、<strong>プロジェクト憲法に「E2Eテストの要素特定には data-testid を使用すること」と明記されています</strong>。目印がないほうが憲法違反だったわけです。</p>
+  </div>
+</div>
+
+<div class="why">
+  <p class="q"><span class="mark">?</span>なぜ「待つ」処理がこんなに必要なのか</p>
+
+  <div class="answer">
+    <p>人間が目で見ている「一瞬」の裏で、<strong>4段階の処理が順番に起きている</strong>から。</p>
+  </div>
+
+  <p>ファイルをアップロードすると、人間には「ポンと一覧に出た」ように見えます。実際にはこうです。</p>
+
+  <ol>
+    <li>ブラウザがファイルを読み込む</li>
+    <li>サーバー（今回はMSW）に送信する ← <strong>通信</strong></li>
+    <li>成功したので、一覧を取り直す ← <strong>また通信</strong></li>
+    <li>受け取ったデータで表を描き直す ← <strong>画面の更新</strong></li>
+  </ol>
+
+  <p>プログラムは人間より圧倒的に速いので、<strong>1が終わった瞬間に「一覧に2件あるはず」と確認しに行きます</strong>。当然まだ0件です。テストは失敗します。</p>
+
+  <p>これが最初にテストが全滅した理由でした。<strong>「操作した」と「結果が出た」は別の時刻に起きる</strong>。この感覚が E2E テストの核心です。</p>
+
+  <h4 style="margin-top:32px">デバウンスという、もう一つの待ち</h4>
+
+  <p><strong>エレベーターの「閉」ボタンを連打しても、扉は連打の回数だけ動きません。</strong>最後に押されてから少し待って、一度だけ閉まります。</p>
+
+  <p>検索ボックスも同じ仕組みです。「田中商事」と打つと4回のキー入力が起きますが、毎回サーバーに問い合わせたら4回も無駄な通信が発生します。だから <strong>「最後の入力から300ミリ秒待って、それから1回だけ検索する」</strong>。これがデバウンス。</p>
+
+  <p style="margin-bottom:0">この300msは仕様書のどこにも書かれていません。<strong>Playwright MCP で実際に触って初めて分かった</strong>ことです。もし知らずにテストを書いていたら、「なぜか時々落ちる」という一番厄介なテストができあがっていました。</p>
+</div>
+
+<div class="why">
+  <p class="q"><span class="mark">?</span>なぜ <code>expect.poll</code> を使うのか — 固定時間待つのではダメなのか</p>
+
+  <div class="answer">
+    <p>待ち時間は環境によって変わるので、<strong>「決め打ちの時間」は必ずどこかで外れる</strong>から。</p>
+  </div>
+
+  <p>料理を注文したあと、確認方法は2つあります。</p>
+
+  <table>
+    <thead>
+      <tr><th>やり方</th><th>問題</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="real">「たぶん10分」と決めて<br>10分後に取りに行く<br><span style="font-weight:400;color:var(--text-soft);font-size:14px">＝ waitForTimeout</span></td>
+        <td>早くできていたら<strong>待ち損</strong>（テストが遅くなる）。<br>遅れていたら<strong>空振り</strong>（テストが落ちる）。<br>混雑具合で変わるのに固定にしている時点で無理がある。</td>
+      </tr>
+      <tr>
+        <td class="real">30秒おきに「できました?」と<br>聞きに行く（最大5分）<br><span style="font-weight:400;color:var(--text-soft);font-size:14px">＝ expect.poll</span></td>
+        <td>できた瞬間に受け取れるので<strong>速い</strong>。<br>遅れても最大5分は待つので<strong>落ちにくい</strong>。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>だから Playwright 公式は <code class="inline">waitForTimeout</code> を非推奨としています。CI サーバーは開発PCより遅いことが多く、手元では通るのに CI では落ちる、という事態を招くからです。</p>
+
+  <div class="note warn" style="margin-bottom:0">
+    <strong>ただし、今回あえて固定待機を1箇所だけ残した</strong>
+    <p>デバウンスの300msは「<strong>必ず経過しなければ処理が始まらない時間</strong>」です。何度確認しに行っても、300ms経つまでは何も起きません。こういう場合は待つしかない。</p>
+    <p style="margin-top:12px">その後の「画面に反映されるまで」は、いつ終わるか分からないので <code class="inline">expect.poll</code> に任せています。<strong>「非推奨だから全部やめる」ではなく、なぜ非推奨なのかを理解して使い分ける</strong>のが正しい姿勢です。</p>
+  </div>
+</div>
+
+<h2><span class="num">SECTION 04</span>重要なコード — なぜそう書くのか</h2>
+
+<h3>1. アップロードの完了を待つ</h3>
+
+<p>最初の版が全滅した原因の箇所です。<strong>なぜこの順番でなければいけないのか</strong>に注目してください。</p>
+
+<span class="filename">playwright/tests/pages/FileListPage.ts</span>
+<pre><span class="k">async</span> <span class="f">uploadFiles</span>(filePaths: <span class="k">string</span>[], expectedRowCount?: <span class="k">number</span>) {
+  <span class="k">for</span> (<span class="k">const</span> filePath <span class="k">of</span> filePaths) {
+
+    <span class="c">// ★なぜ「待つ約束」を先に作るのか★</span>
+    <span class="c">// 操作を先にやると、通信が一瞬で終わってしまい、</span>
+    <span class="c">// 待ち始めたときには既に過ぎ去っていて永久に待つことになる</span>
+    <span class="c">// → 「網を張ってから魚を追い込む」順番が必須</span>
+    <span class="k">const</span> uploadResponse = <span class="k">this</span>.page.<span class="f">waitForResponse</span>(
+      (response) =&gt;
+        response.<span class="f">request</span>().<span class="f">method</span>() === <span class="s">'POST'</span> &amp;&amp;      <span class="c">// アップロードのPOSTだけを対象に</span>
+        response.<span class="f">url</span>().<span class="f">includes</span>(<span class="s">'/api/v1/files'</span>) &amp;&amp;
+        response.<span class="f">ok</span>()                                  <span class="c">// 失敗レスポンスを掴まないように</span>
+    );
+
+    <span class="c">// なぜ1件ずつなのか：まとめて渡すと完了順が保証されず、</span>
+    <span class="c">// 「何番目のファイルの応答か」を特定できなくなる</span>
+    <span class="k">await this</span>.page.<span class="f">getByTestId</span>(<span class="s">'dropInput'</span>).<span class="f">setInputFiles</span>(filePath);
+
+    <span class="k">await</span> uploadResponse;   <span class="c">// ここで初めて送信完了を待つ</span>
+  }
+
+  <span class="c">// ★なぜ通信を待つだけでは足りないのか★</span>
+  <span class="c">// 通信が終わっても、画面の表が書き換わるのはさらに後だから。</span>
+  <span class="c">// ブラウザ内でJSを繰り返し実行して、行数が期待どおりになるまで待つ</span>
+  <span class="k">if</span> (expectedRowCount !== <span class="k">undefined</span>) {
+    <span class="k">await this</span>.page.<span class="f">waitForFunction</span>(
+      (count) =&gt;
+        document.<span class="f">querySelectorAll</span>(<span class="s">'[role="row"][data-rowindex]'</span>).length === count,
+      expectedRowCount
+    );
+  }
+}
+</pre>
+
+<h3>2. テスト用のダミーファイルを作る</h3>
+
+<p>全テストの前提が「ファイルがアップロード済みであること」。<strong>なぜ本物のPDFを用意しないのか</strong>がポイントです。</p>
+
+<span class="filename">playwright/tests/fixtures/testFiles.ts</span>
+<pre><span class="c">// ★なぜ中身が空同然でいいのか★</span>
+<span class="c">// ブラウザは拡張子(.pdf)からMIMEタイプを判断してサーバーに送る。</span>
+<span class="c">// 今回テストしたいのは「一覧に出るか・検索で引っかかるか」であって</span>
+<span class="c">// PDFの中身ではない。だから最小限のバイト列で足りる</span>
+<span class="k">const</span> MINIMAL_PDF_CONTENT = Buffer.<span class="f">from</span>(
+  <span class="s">'%PDF-1.4\n1 0 obj&lt;&lt;&gt;&gt;endobj\ntrailer&lt;&lt;&gt;&gt;\n%%EOF'</span>
+);
+
+<span class="k">export function</span> <span class="f">createTestFiles</span>(fileNames: <span class="k">string</span>[]): <span class="k">string</span>[] {
+  <span class="c">// ★なぜ固定のフォルダ名にしないのか★</span>
+  <span class="c">// mkdtempSync は末尾にランダム文字列を足したフォルダを作る</span>
+  <span class="c">//   例: /tmp/file-list-e2e-A3xK9p</span>
+  <span class="c">// テストを2並列で走らせても、互いのファイルを上書きしない</span>
+  <span class="k">const</span> dir = fs.<span class="f">mkdtempSync</span>(path.<span class="f">join</span>(os.<span class="f">tmpdir</span>(), <span class="s">'file-list-e2e-'</span>));
+
+  <span class="k">return</span> fileNames.<span class="f">map</span>((fileName) =&gt; {
+    <span class="k">const</span> filePath = path.<span class="f">join</span>(dir, fileName);
+    fs.<span class="f">writeFileSync</span>(filePath, MINIMAL_PDF_CONTENT);
+    <span class="k">return</span> filePath;   <span class="c">// 絶対パスを返す。setInputFiles がこれを受け取る</span>
+  });
+}
+</pre>
+
+<h3>3. テストの骨組み</h3>
+
+<p>仕様書の1ケースが、そのまま1つの <code class="inline">describe</code> になります。<strong>なぜケースごとに分けたのか</strong>を見てください。</p>
+
+<span class="filename">playwright/tests/specs/files/file-list.spec.ts</span>
+<pre><span class="c">// ★なぜケースごとにdescribeを分けたのか★</span>
+<span class="c">// ケースによって必要なファイル数が違うから（2件・5件・7件）。</span>
+<span class="c">// 全部まとめて1つのbeforeEachにすると、2件で足りるテストにも</span>
+<span class="c">// 7件アップロードすることになり、無駄に遅くなる</span>
+test.<span class="f">describe</span>(<span class="s">'キーワード検索でファイル名が一致する文書のみ表示されること'</span>, () =&gt; {
+  <span class="k">let</span> fileListPage: FileListPage;
+  <span class="k">let</span> testFilePaths: <span class="k">string</span>[];
+
+  <span class="c">// 仕様書の【前提条件】に対応する部分</span>
+  test.<span class="f">beforeEach</span>(<span class="k">async</span> ({ page }) =&gt; {
+    fileListPage = <span class="k">await</span> <span class="f">loginAndOpenFileList</span>(page);
+    testFilePaths = <span class="f">createTestFiles</span>([<span class="s">'田中商事_請求書.pdf'</span>, <span class="s">'佐藤建設_契約書.pdf'</span>]);
+    <span class="c">// 第2引数 = 「2件表示されるまで待て」の指示</span>
+    <span class="k">await</span> fileListPage.<span class="f">uploadFiles</span>(testFilePaths, testFilePaths.length);
+  });
+
+  <span class="c">// 仕様書の【事後処理】に対応する部分</span>
+  test.<span class="f">afterEach</span>(<span class="k">async</span> ({ page }) =&gt; {
+    <span class="f">cleanupTestFiles</span>(testFilePaths);
+    <span class="k">await</span> page.<span class="f">reload</span>();
+  });
+
+  <span class="c">// テスト名 = 仕様書の見出しをそのままコピー</span>
+  <span class="c">// → レポートを見た人が、仕様書のどこの話か即座に分かる</span>
+  <span class="f">test</span>(<span class="s">'キーワード検索でファイル名が一致する文書のみ表示されること'</span>, <span class="k">async</span> () =&gt; {
+    <span class="k">await</span> fileListPage.<span class="f">fillSearch</span>(<span class="s">'田中商事'</span>);        <span class="c">// 仕様書の手順2</span>
+    <span class="k">await</span> fileListPage.<span class="f">waitForSearchDebounce</span>();     <span class="c">// 仕様書の手順3</span>
+
+    <span class="c">// ★なぜ expect ではなく expect.poll なのか★</span>
+    <span class="c">// 一度だけ確認する expect(...) だと、まだ画面が更新されていない</span>
+    <span class="c">// 一瞬を掴んでしまう可能性がある。pollなら1になるまで繰り返す</span>
+    <span class="k">await</span> expect.<span class="f">poll</span>(() =&gt; fileListPage.<span class="f">getFileRowCount</span>()).<span class="f">toBe</span>(<span class="n">1</span>);
+
+    <span class="f">expect</span>(<span class="k">await</span> fileListPage.<span class="f">isFileVisible</span>(<span class="s">'田中商事_請求書.pdf'</span>)).<span class="f">toBe</span>(<span class="k">true</span>);
+    <span class="f">expect</span>(<span class="k">await</span> fileListPage.<span class="f">isFileVisible</span>(<span class="s">'佐藤建設_契約書.pdf'</span>)).<span class="f">toBe</span>(<span class="k">false</span>);
+  });
+});
+</pre>
+
+<h2><span class="num">SECTION 05</span>今回の学び</h2>
+
+<div class="learn">
+  <h4><span class="badge">気づき</span>MCP の価値は「AIに現実を見せること」だった</h4>
+  <p>MCP を使わずに Claude にテストを書かせていたら、こう書いていたはずです — 資料に書いてある <code class="inline">/files</code> にアクセスし、デバウンスを知らずに即座に検証し、存在しないグリッドビュー切替をテストする。<strong>全部落ちます。</strong></p>
+  <p><strong>教訓：</strong>AI が間違えるのは能力不足ではなく<strong>情報不足</strong>のことが多い。MCP は「AIに正しい情報を与える配管」であって、AIを賢くする道具ではありません。</p>
+</div>
+
+<div class="learn">
+  <h4><span class="badge">気づき</span>MCP とテスト実行ツールは別物</h4>
+  <p>完成した <code class="inline">file-list.spec.ts</code> に MCP は一切登場しません。今後このテストを CI で回すときも MCP は不要です。MCP は<strong>開発中の足場</strong>で、テストが完成したら外れます。</p>
+  <p><strong>教訓：</strong>「AIツールを使って作ったもの」と「AIツールがないと動かないもの」は違う。今日作ったのは前者です。</p>
+</div>
+
+<div class="learn">
+  <h4><span class="badge trip">つまずき</span>「操作した」と「結果が出た」は別の時刻</h4>
+  <p>最初の版は <code class="inline">setInputFiles</code> の直後に行数を数えていて、全滅しました。人間には一瞬に見える裏で、通信2回と画面更新1回が順番に起きています。</p>
+  <p><strong>教訓：</strong>E2Eテストが落ちたら、まず<strong>「早すぎないか」</strong>を疑う。書いた本人は正しいと思っているので、これがいちばん気づきにくい。</p>
+</div>
+
+<div class="learn">
+  <h4><span class="badge trip">つまずき</span>同じURLを別の用途でも叩いていた</h4>
+  <p>「一覧の再取得を待つ」ために <code class="inline">GET /api/v1/files</code> を待つ実装にしたら、逆に不安定になりました。<strong>「最近使用したファイル」も同じエンドポイントを叩いていた</strong>ため、関係ないほうの通信を掴んでいたのです。</p>
+  <p><strong>教訓：</strong>URLだけでリクエストを特定できるとは限らない。<strong>特定できないときは、通信を待つのをやめて「画面の最終状態」を待つ</strong>ほうが確実です。手段にこだわらず目的（結果が反映されたこと）を見る。</p>
+</div>
+
+<div class="learn">
+  <h4><span class="badge trip">つまずき</span>ソートが1ページ目にしか効かない</h4>
+  <p>実装を読むと、ページ送りは <code class="inline">paginationMode="server"</code>（サーバー任せ）なのに、ソートは指定なし＝<code class="inline">client</code>（ブラウザ側）でした。つまり<strong>「いま取得済みの行」の中でしか並び替わりません</strong>。</p>
+  <p><strong>教訓：</strong>E2Eテストは、テストを書く過程で<strong>実装の設計ミスを見つける道具</strong>でもある。今回はテスト側で回避しましたが、本来は実装を直すべき問題です。</p>
+</div>
+
+<div class="learn">
+  <h4><span class="badge">気づき</span>本番ビルドで消える目印がある</h4>
+  <p>MUI のアイコンには <code class="inline">data-testid="CloseIcon"</code> が自動で付きます。便利そうですが、ライブラリのソースを読むと <code class="inline">NODE_ENV !== 'production'</code> の時だけ付ける実装でした。<strong>本番ビルドでは消えます。</strong></p>
+  <p><strong>教訓：</strong>「たまたま存在する属性」に頼らない。<strong>なぜそれが存在するのか</strong>を確認してから使う。</p>
+</div>
+
+<div class="learn">
+  <h4><span class="badge">気づき</span><code>afterEach</code> のリロードは、実は不要だった</h4>
+  <p>MSW のデータをリセットするため <code class="inline">page.reload()</code> を入れましたが、Playwright は<strong>テストごとに新しいブラウザコンテキストを作る</strong>ので、そもそもデータは共有されていませんでした。</p>
+  <p><strong>教訓：</strong>ツールが既にやってくれていることを、自分で書き足していないか。<strong>「念のため」の処理も、理由を説明できなければ削るべき</strong>です。</p>
+</div>
+
+<div class="learn">
+  <h4><span class="badge trip">つまずき</span>テストが全滅したが、原因はコードではなかった</h4>
+  <p><code class="inline">pnpm test:e2e:chromium</code> をそのまま実行すると、新規テストどころか<strong>既存のログインテストまで</strong>落ちました。原因は並列実行数。WSL環境で Chromium を何個も同時起動して、Vite dev サーバーが処理しきれていませんでした。</p>
+  <pre style="margin-top:12px">PLAYWRIGHT_WORKERS=2 pnpm test:e2e:chromium   <span class="c"># → 12/12 成功</span></pre>
+  <p><strong>教訓：</strong><strong>「今まで通っていたテストまで落ちた」は環境を疑うサイン。</strong>自分が書いた部分だけが落ちたならコード、全体が落ちたなら環境。切り分けの基準になります。</p>
+</div>
+
+<div class="learn">
+  <h4><span class="badge">気づき</span>3日間の総括 — 判断は人、作業はAI</h4>
+  <p>今日、Claude は11分かけて画面を調べ、25分かけてテストを書いては直しました。その間に自分がやったのは、<strong>テスト範囲を絞る / 生成物をレビューして4点の修正を指示する / 環境問題とコード問題を切り分ける</strong>という判断です。</p>
+  <p>AI は<strong>「調べる・書く・直す」</strong>が速い。人間は<strong>「何を良しとするか決める」</strong>を担当する。Day 0 の資料にあった「AI支援、人間主導」は、標語ではなく実際の作業分担そのものでした。</p>
+</div>
+
+<h2><span class="num">SECTION 06</span>成果物一覧</h2>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr><th>ファイル</th><th>役割</th><th>作った人</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="real"><code class="inline">specs/files/file-list.md</code></td><td>テスト仕様書。日本語で6ケース分</td><td>Claude＋自分のレビュー</td></tr>
+      <tr><td class="real"><code class="inline">pages/FileListPage.ts</code></td><td>Page Object。画面操作15メソッド</td><td>Claude（MCPで調査）</td></tr>
+      <tr><td class="real"><code class="inline">specs/files/file-list.spec.ts</code></td><td>テスト本体</td><td>Claude</td></tr>
+      <tr><td class="real"><code class="inline">fixtures/testFiles.ts</code></td><td>ダミーPDFの生成・削除</td><td>Claude</td></tr>
+      <tr><td class="real"><code class="inline">AppHeader.tsx</code>（改修）</td><td>testid を2箇所追加</td><td>Claude</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note warn" style="margin-bottom:0">
+    <strong>おまけで見つけたリポジトリの不具合</strong>
+    <p><code class="inline">package.json</code> の <code class="inline">test:e2e:report</code> が <code class="inline">playwright/playwright-report</code> を指していますが、実際の出力先はリポジトリ直下の <code class="inline">playwright-report/</code> です。パスの修正が必要です。</p>
+  </div>
+</div>
+
+<footer>
+  <p>WingArc1st 夏のワークショップ / Spec Kit 学習ノート — Day 3<br>
+  対象リポジトリ: <code class="inline">speckit-workshop-ui</code>（ブランチ: 002-document-management-uratachihaya）<br>
+  テスト結果: 12 passed（1.8m / chromium / workers=2）</p>
+</footer>
+
+</div>
+</body>
+</html>

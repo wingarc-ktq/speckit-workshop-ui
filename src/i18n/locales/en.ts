@@ -12,6 +12,12 @@ export const en = {
     login: 'Login',
     logout: 'Logout',
   },
+  commandPalette: {
+    inputPlaceholder: 'Search files...',
+    empty: {
+      title: 'No matching documents found',
+    },
+  },
   navigation: {
     home: 'Home',
     dashboard: 'Dashboard',
@@ -180,6 +186,10 @@ export const en = {
         tagsPlaceholder: 'Select tags...',
         clear: 'Clear',
         apply: 'Apply',
+      },
+      themeToggle: {
+        switchToLight: 'Switch to light mode',
+        switchToDark: 'Switch to dark mode',
       },
     },
     appSidebar: {

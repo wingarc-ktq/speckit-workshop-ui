@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
 import CloseIcon from '@mui/icons-material/Close';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LightModeIcon from '@mui/icons-material/LightMode';
 import MenuIcon from '@mui/icons-material/Menu';
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
 import SearchIcon from '@mui/icons-material/Search';
@@ -12,6 +14,7 @@ import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import { useThemeMode } from '@/app/providers/ThemeProvider';
 import { tKeys } from '@/i18n/tKeys';
 import { useDebounce } from '@/presentations/hooks/useDebounce';
 import { useFilesSearchParams } from '@/presentations/pages/FilesPage/hooks/useFilesSearchParams';
@@ -28,6 +31,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onMenuToggle }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const { mode, toggleMode } = useThemeMode();
   const { searchQuery, setSearchQuery } = useFilesSearchParams();
   const [searchValue, setSearchValue] = useState(searchQuery ?? '');
   const [filterAnchorEl, setFilterAnchorEl] = useState<HTMLElement | null>(
@@ -93,6 +97,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onMenuToggle }) => {
           placeholder={t(tKeys.layouts.appHeader.searchPlaceholder)}
           size="small"
           slotProps={{
+            htmlInput: {
+              'data-testid': 'searchField',
+            },
             input: {
               startAdornment: (
                 <InputAdornment position="start">
@@ -106,6 +113,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onMenuToggle }) => {
                       size="small"
                       onClick={handleSearchClear}
                       edge="end"
+                      data-testid="searchClearButton"
                     >
                       <CloseIcon fontSize="small" />
                     </IconButton>
@@ -130,6 +138,22 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onMenuToggle }) => {
         />
 
         <S.HeaderActions>
+          <IconButton
+            onClick={toggleMode}
+            data-testid="themeToggleButton"
+            aria-label={
+              mode === 'dark'
+                ? t(tKeys.layouts.appHeader.themeToggle.switchToLight)
+                : t(tKeys.layouts.appHeader.themeToggle.switchToDark)
+            }
+            title={
+              mode === 'dark'
+                ? t(tKeys.layouts.appHeader.themeToggle.switchToLight)
+                : t(tKeys.layouts.appHeader.themeToggle.switchToDark)
+            }
+          >
+            {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+          </IconButton>
           <IconButton>
             <Badge badgeContent={3} color="error">
               <NotificationsOutlinedIcon />

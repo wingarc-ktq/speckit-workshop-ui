@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spec Kit 学習ノート — Day 0〜2</title>
+<style>
+  :root {
+    --bg: #FAF8F5;
+    --card: #FFFFFF;
+    --text: #33383F;
+    --text-soft: #6B7280;
+    --accent: #2C6E9B;
+    --accent-soft: #E8F1F7;
+    --warn: #B4762C;
+    --warn-soft: #FDF4E7;
+    --good: #3D7A55;
+    --good-soft: #EAF4EE;
+    --line: #E6E2DC;
+    --code-bg: #2B303B;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif;
+    line-height: 1.9;
+    font-size: 16px;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 72px 32px 120px;
+  }
+
+  header.hero {
+    margin-bottom: 72px;
+    padding-bottom: 40px;
+    border-bottom: 2px solid var(--line);
+  }
+
+  .eyebrow {
+    display: inline-block;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-weight: 600;
+    margin-bottom: 24px;
+  }
+
+  h1 {
+    font-size: 38px;
+    line-height: 1.4;
+    margin: 0 0 20px;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    font-size: 18px;
+    color: var(--text-soft);
+    margin: 0;
+  }
+
+  h2 {
+    font-size: 27px;
+    margin: 80px 0 12px;
+    padding-left: 16px;
+    border-left: 5px solid var(--accent);
+    line-height: 1.5;
+  }
+
+  h2 .num {
+    display: block;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  h3 {
+    font-size: 20px;
+    margin: 44px 0 14px;
+  }
+
+  h4 {
+    font-size: 16px;
+    margin: 28px 0 10px;
+    color: var(--accent);
+  }
+
+  p { margin: 0 0 20px; }
+
+  ul, ol { margin: 0 0 20px; padding-left: 26px; }
+  li { margin-bottom: 10px; }
+
+  .lead {
+    font-size: 17px;
+    color: var(--text-soft);
+    margin-bottom: 36px;
+  }
+
+  /* ---- カード ---- */
+  .card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 40px 44px;
+    margin: 32px 0;
+    box-shadow: 0 2px 4px rgba(50,45,40,.04), 0 10px 30px rgba(50,45,40,.07);
+  }
+
+  .card > :first-child { margin-top: 0; }
+  .card > :last-child { margin-bottom: 0; }
+
+  /* ---- 比喩ブロック ---- */
+  .analogy {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 36px 40px;
+    margin: 28px 0;
+    box-shadow: 0 2px 4px rgba(50,45,40,.04), 0 10px 30px rgba(50,45,40,.07);
+    border-top: 5px solid var(--accent);
+  }
+
+  .analogy h3 {
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .icon {
+    font-size: 26px;
+    line-height: 1;
+  }
+
+  /* ---- 対応表 ---- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 15px;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+
+  th {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  td.real { width: 30%; font-weight: 600; }
+  td.arrow { width: 6%; text-align: center; color: var(--text-soft); }
+
+  /* ---- フロー図 ---- */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 32px 0;
+  }
+
+  .flow-step {
+    background: var(--accent-soft);
+    border-radius: 10px;
+    padding: 18px 24px;
+    position: relative;
+  }
+
+  .flow-step .label {
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 15px;
+    display: block;
+  }
+
+  .flow-step .desc {
+    font-size: 14px;
+    color: var(--text-soft);
+    display: block;
+    margin-top: 2px;
+  }
+
+  .flow-arrow {
+    text-align: center;
+    color: var(--accent);
+    font-size: 20px;
+    line-height: 1;
+    padding: 10px 0;
+  }
+
+  .flow-step.made { background: var(--good-soft); }
+  .flow-step.made .label { color: var(--good); }
+
+  /* ---- コード ---- */
+  pre {
+    background: var(--code-bg);
+    color: #DCE0E8;
+    padding: 24px 26px;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-size: 13.5px;
+    line-height: 2;
+    margin: 18px 0 26px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  pre .c { color: #7E8AA0; font-style: italic; }
+  pre .k { color: #C6A0F6; }
+  pre .s { color: #A6DA95; }
+  pre .f { color: #8AADF4; }
+  pre .n { color: #F5A97F; }
+
+  code.inline {
+    background: #EFECE7;
+    padding: 3px 7px;
+    border-radius: 5px;
+    font-size: 14px;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    color: #8B4A2F;
+  }
+
+  .filename {
+    display: inline-block;
+    background: #3A404C;
+    color: #C9D0DC;
+    font-size: 12.5px;
+    padding: 6px 14px;
+    border-radius: 8px 8px 0 0;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    margin-bottom: -18px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .filename + pre { border-top-left-radius: 0; }
+
+  /* ---- 注意/ポイント ---- */
+  .note {
+    border-radius: 10px;
+    padding: 22px 26px;
+    margin: 26px 0;
+    font-size: 15px;
+  }
+
+  .note strong { display: block; margin-bottom: 6px; }
+
+  .note.warn { background: var(--warn-soft); border-left: 5px solid var(--warn); }
+  .note.warn strong { color: var(--warn); }
+
+  .note.good { background: var(--good-soft); border-left: 5px solid var(--good); }
+  .note.good strong { color: var(--good); }
+
+  .note p:last-child { margin-bottom: 0; }
+
+  /* ---- 学びリスト ---- */
+  .learn {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 32px 36px;
+    margin: 22px 0;
+    box-shadow: 0 2px 4px rgba(50,45,40,.04), 0 10px 30px rgba(50,45,40,.07);
+  }
+
+  .learn h4 {
+    margin: 0 0 12px;
+    font-size: 18px;
+    color: var(--text);
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+  }
+
+  .learn h4 .badge {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .learn h4 .badge.trip { background: var(--warn-soft); color: var(--warn); }
+
+  .learn p:last-child { margin-bottom: 0; }
+
+  footer {
+    margin-top: 100px;
+    padding-top: 32px;
+    border-top: 2px solid var(--line);
+    color: var(--text-soft);
+    font-size: 14px;
+  }
+
+  @media (max-width: 640px) {
+    .wrap { padding: 48px 20px 80px; }
+    h1 { font-size: 29px; }
+    h2 { font-size: 23px; }
+    .card, .analogy, .learn { padding: 28px 24px; }
+    td.real { width: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <span class="eyebrow">WingArc1st インターン / Day 0 – Day 2</span>
+  <h1>仕様書からアプリを作る<br>Spec Kit ワークフロー</h1>
+  <p class="subtitle">日本語で書いた「作りたいもの」から、動く React 画面までを AI と一緒に組み立てる。文書管理システムの MVP 実装まで。</p>
+</header>
+
+<h2><span class="num">SECTION 01</span>概要</h2>
+
+<p class="lead">このワークショップで扱ったのは <strong>Spec Kit</strong> という開発の進め方です。「コードを書く」のではなく「<strong>何を作るかを日本語で正確に決める</strong>」ことに時間を使い、そこから設計・実装を AI に展開させます。</p>
+
+<h3>できるようになったこと</h3>
+
+<ul>
+  <li>仕様書（<code class="inline">spec.md</code>）を読み解き、優先度 P1 の「最低限これがないと意味がない機能」を切り出せる</li>
+  <li><code class="inline">/speckit.plan</code> → <code class="inline">/speckit.tasks</code> → <code class="inline">/speckit.implement</code> という決まった順番で開発を進められる</li>
+  <li>OpenAPI という「API の設計図」から、TypeScript の型・通信コード・テスト用の偽サーバーを自動生成できる</li>
+  <li>Node.js / pnpm / MSW / Playwright が動く開発環境をゼロから構築できる</li>
+</ul>
+
+<h3>3日間の流れと、いまどこにいるか</h3>
+
+<div class="flow">
+  <div class="flow-step made">
+    <span class="label">Day 0 ─ 全体像を掴む</span>
+    <span class="desc">Spec Kit とは何か。7つのコマンドの役割。プロジェクト憲法という「守るべきルール」の存在。</span>
+  </div>
+  <div class="flow-arrow">▼</div>
+  <div class="flow-step made">
+    <span class="label">Day 1 ─ デザインと計画（Spec → Plan）</span>
+    <span class="desc">spec.md を読んで画面を洗い出し、Figma でデザイン。<code>/speckit.plan</code> で技術的な実装計画 plan.md を作る。</span>
+  </div>
+  <div class="flow-arrow">▼</div>
+  <div class="flow-step made">
+    <span class="label">Day 2 ─ 実装（Plan → Code）</span>
+    <span class="desc"><code>/speckit.tasks</code> で 100 個以上の作業に分解し、<code>/speckit.implement</code> で React コンポーネントを生成。文書一覧・検索・アップロードが動く状態に。</span>
+  </div>
+  <div class="flow-arrow">▼</div>
+  <div class="flow-step">
+    <span class="label">Day 3 ─ テスト（← いまここ）</span>
+    <span class="desc">Playwright でブラウザを自動操作する E2E テストを書く。</span>
+  </div>
+</div>
+
+<div class="note good">
+  <strong>Day 2 までの成果物</strong>
+  <p>ログインすると開く「マイファイル」画面。ファイル一覧テーブル（名前・タグ・更新日時・サイズ）、キーワード検索、ドラッグ&amp;ドロップのアップロードエリア、ページネーション、タグ表示。約 130 個のタスクの積み重ねです。</p>
+</div>
+
+<h2><span class="num">SECTION 02</span>直感的な補足 — レストランの厨房にたとえる</h2>
+
+<p class="lead">Spec Kit の登場人物は多くて混乱しがちです。ぜんぶ「レストランで料理を出すまで」に置き換えると、役割がはっきりします。</p>
+
+<div class="analogy">
+  <h3><span class="icon">&#127860;</span>Spec Kit ＝ 注文から配膳までの流れ</h3>
+
+  <p>お客さんが「こういう料理が食べたい」と言ってから、実際に皿が出てくるまで。厨房ではこういう順番で進みます。</p>
+
+  <table>
+    <thead>
+      <tr><th>レストランでは</th><th></th><th>Spec Kit では</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="real">お客様の注文書<br><span style="color:var(--text-soft);font-weight:400;font-size:14px">「魚料理で、あっさりめで」</span></td>
+        <td class="arrow">→</td>
+        <td><code class="inline">spec.md</code>（仕様書）<br><span style="color:var(--text-soft);font-size:14px">日本語で書かれた「作りたいもの」。ここが全ての出発点。</span></td>
+      </tr>
+      <tr>
+        <td class="real">店のハウスルール<br><span style="color:var(--text-soft);font-weight:400;font-size:14px">「うちは必ず国産食材」「化学調味料は使わない」</span></td>
+        <td class="arrow">→</td>
+        <td><code class="inline">constitution.md</code>（プロジェクト憲法）<br><span style="color:var(--text-soft);font-size:14px">TypeScript は strict、UI は Material-UI、テストなしはマージ禁止。例外なし。</span></td>
+      </tr>
+      <tr>
+        <td class="real">料理長の調理計画<br><span style="color:var(--text-soft);font-weight:400;font-size:14px">「蒸し器を使う。ソースは先に仕込む」</span></td>
+        <td class="arrow">→</td>
+        <td><code class="inline">plan.md</code>（実装計画）<br><span style="color:var(--text-soft);font-size:14px">どのライブラリを使い、どういう構成で作るかの技術判断。</span></td>
+      </tr>
+      <tr>
+        <td class="real">作業手順書<br><span style="color:var(--text-soft);font-weight:400;font-size:14px">「①野菜を切る ②鍋を火にかける…」</span></td>
+        <td class="arrow">→</td>
+        <td><code class="inline">tasks.md</code>（タスク一覧）<br><span style="color:var(--text-soft);font-size:14px">130 個の粒度まで分解。同時にやれる作業には印がつく。</span></td>
+      </tr>
+      <tr>
+        <td class="real">実際の調理</td>
+        <td class="arrow">→</td>
+        <td><code class="inline">/speckit.implement</code><br><span style="color:var(--text-soft);font-size:14px">手順書どおりにコードを書いていく工程。</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="margin-bottom:0"><strong>ポイントは順番を飛ばせないこと。</strong> 注文書がないのに調理を始めたら、何を作っているのか誰にも分かりません。Spec Kit が「まず仕様書」と言い張るのはこのためです。</p>
+</div>
+
+<div class="analogy">
+  <h3><span class="icon">&#9986;</span>OpenAPI と Orval ＝ 型紙と裁断機</h3>
+
+  <p>洋服工場を想像してください。<strong>型紙</strong>が1枚あれば、そこから同じサイズの服を何着でも作れます。手で測って切ると、どうしても1枚ごとに微妙にズレます。</p>
+
+  <table>
+    <tbody>
+      <tr>
+        <td class="real">型紙</td>
+        <td class="arrow">→</td>
+        <td><code class="inline">schema/files/openapi.yaml</code> — 「サーバーとやりとりするデータの形」を1箇所に書いた設計図</td>
+      </tr>
+      <tr>
+        <td class="real">裁断機</td>
+        <td class="arrow">→</td>
+        <td><code class="inline">pnpm gen:api</code>（Orval）— 型紙を読んで、TypeScript の型・通信コード・偽サーバーを自動で吐き出す</td>
+      </tr>
+      <tr>
+        <td class="real">できあがった服</td>
+        <td class="arrow">→</td>
+        <td><code class="inline">src/adapters/generated/files.ts</code> — 手書き禁止。型紙を直して裁断機を回し直す</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="margin-bottom:0">だから <strong>API の仕様を変えたいときは、生成されたコードではなく型紙（yaml）を直す</strong>。生成物を手で書き換えると、次に裁断機を回した瞬間に消えます。</p>
+</div>
+
+<div class="analogy">
+  <h3><span class="icon">&#127843;</span>MSW ＝ ショーケースの食品サンプル</h3>
+
+  <p>飲食店の店頭にある、あのロウでできた food サンプル。<strong>本物の厨房が動いていなくても、見た目の確認はできる</strong>。これが MSW（Mock Service Worker）です。</p>
+
+  <p>今回のワークショップにはサーバー（バックエンド）が存在しません。それでも画面にファイル一覧が出るのは、MSW がブラウザの中で「サーバーのふり」をして、それっぽいデータを返しているからです。</p>
+
+  <div class="note warn" style="margin-bottom:0">
+    <strong>食品サンプルなので、片付けると消える</strong>
+    <p>MSW のデータはブラウザのメモリ上にあるだけです。ページをリロードすると、アップロードしたファイルは<strong>全部消えて初期状態に戻ります</strong>。Day 3 のテストで「前提条件」「事後処理」を書くのは、この性質を利用（あるいは回避）するためです。</p>
+  </div>
+</div>
+
+<div class="analogy">
+  <h3><span class="icon">&#127981;</span>Clean Architecture ＝ 厨房の持ち場</h3>
+
+  <p>ちゃんとした厨房は、場所ごとに役割が決まっています。仕込み場、コンロ前、盛り付け台。<strong>盛り付け担当が勝手に食材を仕入れに行かない</strong>から、混乱せずに回ります。</p>
+
+  <table>
+    <tbody>
+      <tr><td class="real">食材の仕入れ口</td><td class="arrow">→</td><td><code class="inline">src/adapters/</code> — 外部（API・ストレージ）とのやりとり専門</td></tr>
+      <tr><td class="real">レシピと調理知識</td><td class="arrow">→</td><td><code class="inline">src/domain/</code> — 業務ルールと型定義。外部に一切依存しない</td></tr>
+      <tr><td class="real">店全体の段取り</td><td class="arrow">→</td><td><code class="inline">src/app/</code> — ルーティングや全体設定</td></tr>
+      <tr><td class="real">盛り付け・配膳</td><td class="arrow">→</td><td><code class="inline">src/presentations/</code> — 画面に見えるもの全部</td></tr>
+    </tbody>
+  </table>
+
+  <p style="margin-bottom:0">この線引きがあると、「サーバーを本物に差し替える」ときに <code class="inline">adapters/</code> だけ直せば済みます。画面のコードは触らなくていい。</p>
+</div>
+
+<h2><span class="num">SECTION 03</span>重要なコード</h2>
+
+<h3>1. 環境をチームで揃える — <code class="inline">.npmrc</code></h3>
+
+<p>環境構築でいちばん最初に効いてきたファイルです。たった3行ですが、これのおかげで Node.js を手動インストールせずに済みました。</p>
+
+<span class="filename">.npmrc</span>
+<pre><span class="c"># engine-strict: package.json の engines 指定と違う Node で動かそうとしたらエラーで止める</span>
+<span class="c">#                「バージョン違うけど動くやろ」を許さない設定</span>
+engine-strict=<span class="k">true</span>
+
+<span class="c"># use-node-version: pnpm がこのバージョンの Node.js を自動でダウンロードして使う</span>
+<span class="c">#                   → 自分のPCに Node が入っていなくてもいい。pnpm さえあれば揃う</span>
+use-node-version=<span class="n">22.23.1</span>
+
+<span class="c"># package-manager-strict: package.json の packageManager と違う pnpm だとエラー</span>
+<span class="c">#                         今回は pnpm@10.12.4 ちょうどが必要だった理由がこれ</span>
+package-manager-strict=<span class="k">true</span>
+</pre>
+
+<div class="note good">
+  <strong>なぜ大事か</strong>
+  <p>「自分のPCでは動くのに、他の人の環境では動かない」の最大の原因がバージョン違いです。この3行が、全員を強制的に同じ環境に揃えます。</p>
+</div>
+
+<h3>2. タスク分解の読み方 — <code class="inline">tasks.md</code></h3>
+
+<p><code class="inline">/speckit.tasks</code> が吐き出す1行1行には、決まった意味があります。</p>
+
+<span class="filename">specs/002-document-management-example/tasks.md</span>
+<pre><span class="c">## Format: [ID] [P?] [Story] Description</span>
+
+<span class="c">// [x] = 完了済み / T001 = タスク番号（実装はこの番号を指定して呼び出す）</span>
+- [x] T001 依存パッケージのインストール `pnpm add @mui/x-data-grid react-dropzone date-fns`
+
+<span class="c">// [P] = Parallel。他のタスクとファイルが被らないので"同時に進めてよい"印</span>
+- [x] T002 [P] OpenAPI仕様を `schema/files/openapi.yaml` にコピー
+
+<span class="c">// [US1] = User Story 1 に属するタスク。仕様書のどの機能のためかを紐づけている</span>
+<span class="c">//        → 「Story 1 だけ完成させて動作確認」という進め方ができる</span>
+- [x] T044 [P] [US1] FileUploadZoneコンポーネント `.../FileUploadZone.tsx`
+
+<span class="c">// 説明には必ず"正確なファイルパス"が入る。AIが迷わず書き込めるようにするため</span>
+- [x] T049 [P] [US2] FileListTableコンポーネント（MUI DataGrid使用） `.../FileListTable.tsx`
+</pre>
+
+<p>フェーズの順番にも意味があります。<strong>Phase 1（セットアップ）→ Phase 2（基盤）→ Phase 3以降（機能ごと）</strong>。Phase 2 が終わるまで機能の実装に入れないのは、土台がないと全部やり直しになるからです。</p>
+
+<h3>3. 一覧テーブルの定義 — <code class="inline">FileListTable.tsx</code></h3>
+
+<p>Day 2 の成果物の中核。MUI の DataGrid に「どんな列を出すか」を渡している部分です。</p>
+
+<span class="filename">src/presentations/pages/FilesPage/components/MyFilesSection/components/FileListTable/FileListTable.tsx</span>
+<pre><span class="k">const</span> columns: GridColDef&lt;DocumentFile&gt;[] = React.<span class="f">useMemo</span>(
+  () =&gt; [
+    {
+      field: <span class="s">'name'</span>,          <span class="c">// データのどのプロパティを表示するか（file.name）</span>
+      headerName: <span class="s">'Name'</span>,      <span class="c">// 列見出しに出る文字。E2Eテストではこれをクリックしてソートする</span>
+      flex: <span class="n">1</span>,                  <span class="c">// 余った横幅を他の列と等分する</span>
+      minWidth: <span class="n">300</span>,           <span class="c">// これ以上は縮まない下限</span>
+      renderCell: (params) =&gt; (  <span class="c">// セルの見た目を自作する。ここではアイコン＋ファイル名</span>
+        &lt;DataGridCellContent&gt;
+          &lt;Avatar&gt;&lt;DescriptionIcon /&gt;&lt;/Avatar&gt;
+          &lt;Typography variant=<span class="s">"body2"</span> noWrap&gt;{params.value}&lt;/Typography&gt;
+        &lt;/DataGridCellContent&gt;
+      ),
+    },
+    {
+      field: <span class="s">'uploadedAt'</span>,
+      headerName: <span class="s">'Last Modified'</span>,
+      <span class="c">// valueFormatter: 中身の値だけ変換する（見た目は DataGrid 標準のまま）</span>
+      <span class="c">// サーバーから来る日時データを "2026/08/25 10:30" の形に整える</span>
+      valueFormatter: (value) =&gt; <span class="f">format</span>(value, <span class="s">'yyyy/MM/dd HH:mm'</span>),
+    },
+    {
+      field: <span class="s">'size'</span>,
+      headerName: <span class="s">'File Size'</span>,
+      <span class="c">// バイト数（1048576）を "1.0 MB" のような人が読める形に変換</span>
+      valueFormatter: (value) =&gt; <span class="f">formatFileSize</span>(value),
+    },
+  ],
+  [getFileTags]  <span class="c">// この値が変わったときだけ columns を作り直す（毎回作ると遅い）</span>
+);
+</pre>
+
+<div class="note warn">
+  <strong>renderCell と valueFormatter の使い分け</strong>
+  <p><code class="inline">renderCell</code> は「セルの中身を HTML ごと差し替える」。<code class="inline">valueFormatter</code> は「文字列だけ整形する」。日付やサイズのような<strong>ただの変換なら valueFormatter</strong> のほうが軽くて速いです。</p>
+</div>
+
+<h3>4. 検索状態を URL に持たせる — <code class="inline">useFilesSearchParams.ts</code></h3>
+
+<p>地味ですが、設計として一番おもしろい部分です。検索キーワードを React の state ではなく <strong>URL のクエリパラメータ</strong>に保存しています。</p>
+
+<span class="filename">src/presentations/pages/FilesPage/hooks/useFilesSearchParams.ts</span>
+<pre><span class="k">export function</span> <span class="f">useFilesSearchParams</span>() {
+  <span class="c">// React Router の機能。URL の ?search=... の部分を読み書きする</span>
+  <span class="k">const</span> [searchParams, setSearchParams] = <span class="f">useSearchParams</span>();
+
+  <span class="k">const</span> setSearchQuery = <span class="f">useCallback</span>(
+    (query: <span class="k">string</span>) =&gt; {
+      <span class="k">if</span> (query) {
+        <span class="c">// URL に ?search=田中商事 を書き込む</span>
+        searchParams.<span class="f">set</span>(QUERY_PARAMS.SEARCH, query);
+
+        <span class="c">// ★重要★ 検索したらページ番号を消す＝1ページ目に戻す</span>
+        <span class="c">// これがないと「5ページ目を見ている状態で検索 → 結果2件なのに5ページ目」</span>
+        <span class="c">//                → 何も表示されない、というバグになる</span>
+        searchParams.<span class="f">delete</span>(QUERY_PARAMS.PAGE);
+      } <span class="k">else</span> {
+        <span class="c">// キーワードが空なら ?search= ごと消す（URLを汚さない）</span>
+        searchParams.<span class="f">delete</span>(QUERY_PARAMS.SEARCH);
+      }
+
+      <span class="c">// replace: true = ブラウザの履歴を積み上げない</span>
+      <span class="c">// 1文字打つたびに履歴が増えると、戻るボタンが使い物にならなくなる</span>
+      <span class="f">setSearchParams</span>(searchParams, { replace: <span class="k">true</span> });
+    },
+    [searchParams, setSearchParams]
+  );
+
+  <span class="k">return</span> { searchQuery: <span class="f">getSearchQuery</span>(), page: <span class="f">getPage</span>(), <span class="c">/* ... */</span> setSearchQuery };
+}
+</pre>
+
+<div class="note good">
+  <strong>URL に状態を持たせる利点</strong>
+  <p>検索結果の URL をそのまま同僚に送れる。ブラウザの「戻る」が期待どおり動く。リロードしても検索条件が消えない。React の state に入れていたら、この3つが全部できません。</p>
+</div>
+
+<h3>5. 検索中は画面を切り替える — <code class="inline">FilesPage.tsx</code></h3>
+
+<p>ページ本体は驚くほど短い。「組み立てるだけ」に徹しているのが Clean Architecture の効果です。</p>
+
+<span class="filename">src/presentations/pages/FilesPage/FilesPage.tsx</span>
+<pre><span class="k">export const</span> FilesPage: React.FC = () =&gt; {
+  <span class="c">// URL から検索キーワードとタグを取り出す（上のフックを使用）</span>
+  <span class="k">const</span> { searchQuery, tagIds } = <span class="f">useFilesSearchParams</span>();
+
+  <span class="c">// !! で「文字列 → 真偽値」に変換。キーワードがあれば true</span>
+  <span class="k">const</span> isSearching = !!searchQuery;
+
+  <span class="k">return</span> (
+    <span class="c">// data-testid: E2Eテストがこの画面を見つけるための目印（憲法で必須）</span>
+    &lt;S.Page data-testid=<span class="s">"filesPage"</span>&gt;
+      {!isSearching &amp;&amp; (
+        <span class="c">// 検索中でないときだけ「最近使ったファイル」と「アップロード欄」を出す</span>
+        <span class="c">// → 検索中は結果に集中させる、という UX 上の判断</span>
+        &lt;&gt;
+          &lt;RecentFilesSection /&gt;
+          &lt;UploadSection /&gt;
+        &lt;/&gt;
+      )}
+      <span class="c">// 一覧は常に表示。検索条件を渡して中で絞り込ませる</span>
+      &lt;MyFilesSection searchQuery={searchQuery} tagIds={tagIds} /&gt;
+    &lt;/S.Page&gt;
+  );
+};
+</pre>
+
+<h2><span class="num">SECTION 04</span>今回の学び</h2>
+
+<div class="learn">
+  <h4><span class="badge trip">つまずき</span>WSL が Windows の Node.js を拾っていた</h4>
+  <p><code class="inline">corepack enable</code> が <code class="inline">/bin/sh^M: 誤ったインタプリタです</code> というエラーで落ちました。原因は、WSL（Linux）が Windows 側にインストールされた Node.js を見に行っていたこと。Windows のファイルは改行コードが <code class="inline">CRLF</code> で、Linux はそれを <code class="inline">^M</code> という余計な文字として読んでしまいます。</p>
+  <p><strong>教訓：</strong>WSL で開発するときは、ツールも WSL の中に入れる。<code class="inline">which pnpm</code> の結果が <code class="inline">/mnt/c/...</code> だったら Windows 側を見ている合図です。</p>
+</div>
+
+<div class="learn">
+  <h4><span class="badge">気づき</span>環境構築は「pnpm を入れるだけ」で済んだ</h4>
+  <p><code class="inline">.npmrc</code> の <code class="inline">use-node-version</code> のおかげで、Node.js を自分でインストールする必要がありませんでした。pnpm がプロジェクト指定のバージョンを勝手にダウンロードしてくれます。</p>
+  <p><strong>教訓：</strong>環境構築で詰まったら、まず設定ファイル（<code class="inline">.npmrc</code> / <code class="inline">package.json</code> の <code class="inline">engines</code>・<code class="inline">packageManager</code>）を読む。手順書より設定ファイルのほうが正確です。</p>
+</div>
+
+<div class="learn">
+  <h4><span class="badge trip">つまずき</span><code>&lt;your-name&gt;</code> をそのまま貼ってエラー</h4>
+  <p>手順書の <code class="inline">git checkout -b 002-document-management-&lt;your-name&gt;</code> をそのままコピペしたら「予期しないトークン」エラー。bash は <code class="inline">&lt;</code> を「ファイルから入力を読み込め」という命令として解釈するためです。</p>
+  <p><strong>教訓：</strong>手順書の <code class="inline">&lt; &gt;</code> や <code class="inline">[ ]</code> で囲まれた部分は「ここを自分の値に置き換えて」の意味。記号ごと消して置き換えます。</p>
+</div>
+
+<div class="learn">
+  <h4><span class="badge">気づき</span>仕様書と実装は、けっこうズレる</h4>
+  <p>実際に動かして初めて分かった食い違いがいくつもありました。</p>
+  <ul>
+    <li>仕様（FR-010）は「1ページ20件」→ 実装は<strong>10件</strong></li>
+    <li>資料の画面URLは <code class="inline">/files</code> → 実装は <code class="inline">/</code>（ルート）</li>
+    <li>仕様（FR-016）は「ファイル名とタグ名で検索」→ 実装は<strong>タグ名では検索できない</strong></li>
+    <li>グリッドビュー切替・検索ハイライトは<strong>未実装</strong></li>
+  </ul>
+  <p><strong>教訓：</strong>仕様書は「そうあってほしい姿」であって、動いているコードの説明書ではありません。テストを書くときは<strong>必ず実物を触って確かめる</strong>。ドキュメントを信じて書いたテストは落ちます。</p>
+</div>
+
+<div class="learn">
+  <h4><span class="badge">気づき</span>タスクに <code>[P]</code> と <code>[US1]</code> がついている理由</h4>
+  <p><code class="inline">[P]</code> は「他とファイルが被らないので並行してよい」、<code class="inline">[US1]</code> は「User Story 1 のためのタスク」。この2つの印があるおかげで、<strong>Story 1 だけ先に完成させて動作確認する</strong>という進め方ができます。</p>
+  <p><strong>教訓：</strong>130 個のタスクを上から順にやる必要はない。優先度 P1 のストーリー単位で「動く状態」を作りながら進めるほうが、途中で時間切れになっても成果が残ります。</p>
+</div>
+
+<div class="learn">
+  <h4><span class="badge trip">つまずき</span>MSW のデータはリロードで消える</h4>
+  <p>アップロードしたファイルはブラウザのメモリにしかありません。リロードすると初期状態（0件）に戻ります。</p>
+  <p><strong>教訓：</strong>これは欠点ではなく<strong>テストにとっては長所</strong>。テストごとにリロードすれば、毎回まっさらな状態から始められます。Day 3 で「事後処理：リロードしてリセット」と書くのはこのためです。</p>
+</div>
+
+<div class="learn">
+  <h4><span class="badge">気づき</span>生成されたコードは手で直さない</h4>
+  <p><code class="inline">src/adapters/generated/</code> の中身は <code class="inline">pnpm gen:api</code> が作ったもの。手で編集しても、次にコマンドを打った瞬間に上書きされて消えます。</p>
+  <p><strong>教訓：</strong>直すべきは<strong>元になった設計図</strong>（<code class="inline">schema/files/openapi.yaml</code>）のほう。「自動生成されたファイルは触らない」はどのプロジェクトでも共通のルールです。</p>
+</div>
+
+<div class="learn">
+  <h4><span class="badge">気づき</span>AI に任せる部分と、人が決める部分</h4>
+  <p>Spec Kit は構造とコードを生成しますが、<strong>「何を作るか」「どの機能を優先するか」は人が決める</strong>。実際、P1 の3ストーリーに絞る判断も、仕様と実装のズレをどう扱うかの判断も、AI ではなく自分がやりました。</p>
+  <p><strong>教訓：</strong>Day 0 の資料にあった「AI支援、人間主導」はスローガンではなく、実際の作業配分そのものでした。</p>
+</div>
+
+<footer>
+  <p>WingArc1st 夏のワークショップ / Spec Kit 学習ノート — Day 0〜2<br>
+  対象リポジトリ: <code class="inline">speckit-workshop-ui</code>（ブランチ: 002-document-management-uratachihaya）</p>
+</footer>
+
+</div>
+</body>
+</html>

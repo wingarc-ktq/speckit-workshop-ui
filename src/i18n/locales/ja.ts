@@ -12,6 +12,12 @@ export const ja = {
     login: 'ログイン',
     logout: 'ログアウト',
   },
+  commandPalette: {
+    inputPlaceholder: 'ファイルを検索...',
+    empty: {
+      title: '該当する文書が見つかりませんでした',
+    },
+  },
   navigation: {
     home: 'ホーム',
     dashboard: 'ダッシュボード',
@@ -187,6 +193,10 @@ export const ja = {
         tagsPlaceholder: 'タグを選択...',
         clear: 'クリア',
         apply: '適用',
+      },
+      themeToggle: {
+        switchToLight: 'ライトモードに切り替え',
+        switchToDark: 'ダークモードに切り替え',
       },
     },
     appSidebar: {

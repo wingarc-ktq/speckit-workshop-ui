@@ -2,6 +2,8 @@ import React, { useRef } from 'react';
 
 import { Outlet } from 'react-router-dom';
 
+import { CommandPalette } from '@/presentations/components/CommandPalette';
+
 import {
   AppBreadcrumbs,
   AppHeader,
@@ -30,6 +32,7 @@ export const AppLayout: React.FC = () => {
           </PageWrapper>
         </AppMain>
       </ResizableLayout>
+      <CommandPalette />
     </S.LayoutRoot>
   );
 };
