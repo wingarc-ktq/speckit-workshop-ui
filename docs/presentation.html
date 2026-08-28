@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>発表資料 — Spec Kit ワークショップ</title>
+<style>
+  :root{
+    --bg:#1C1C1A; --card:#2C2C2A; --acc:#D85A30; --acc2:#F0997B;
+    --tx:#F1EFE8; --mu:#B4B2A9; --line:#5F5E5A;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:#111;color:var(--tx);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Yu Gothic UI",sans-serif;
+    line-height:1.7;
+  }
+  .slide{
+    width:100vw;height:100vh;background:var(--bg);
+    padding:5vh 6vw;display:none;flex-direction:column;
+    position:relative;
+  }
+  .slide.on{display:flex}
+  h1{font-size:clamp(28px,3.6vw,50px);font-weight:700;line-height:1.3;letter-spacing:-.01em}
+  .sub{font-size:clamp(13px,1.15vw,17px);color:var(--mu);margin-top:14px}
+  .lbl{font-size:clamp(11px,.95vw,14px);font-weight:700;color:var(--acc2);letter-spacing:.06em;margin-bottom:14px}
+  .card{background:var(--card);border-radius:14px;padding:clamp(16px,1.8vw,28px)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:clamp(16px,2vw,32px)}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,1.6vw,26px)}
+  .num{
+    width:clamp(26px,2.2vw,34px);height:clamp(26px,2.2vw,34px);border-radius:50%;
+    background:var(--acc);color:#fff;font-weight:700;font-size:clamp(12px,1vw,15px);
+    display:flex;align-items:center;justify-content:center;flex:none;
+  }
+  .big{font-size:clamp(34px,4.2vw,60px);font-weight:700;color:var(--acc);line-height:1.15}
+  .cap{font-size:clamp(11px,.95vw,14px);color:var(--mu);margin-top:6px}
+  .row{display:flex;gap:14px;align-items:flex-start}
+  .t{font-size:clamp(14px,1.25vw,19px);font-weight:700}
+  .d{font-size:clamp(11px,1vw,15px);color:var(--mu);margin-top:2px}
+  ul{list-style:none}
+  li{font-size:clamp(12px,1.1vw,16px);margin-bottom:9px;padding-left:18px;position:relative}
+  li::before{content:"–";position:absolute;left:0;color:var(--acc)}
+  .pg{position:absolute;right:6vw;bottom:3.5vh;font-size:12px;color:var(--line)}
+  .fill{flex:1}
+  .nav{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);display:flex;gap:8px;z-index:9}
+  .nav button{
+    background:var(--card);color:var(--mu);border:1px solid var(--line);
+    border-radius:7px;padding:5px 13px;font-size:13px;cursor:pointer;font-family:inherit;
+  }
+  .nav button:hover{color:var(--tx)}
+  @media print{
+    .nav{display:none}
+    .slide{display:flex!important;page-break-after:always;width:100%;height:100vh}
+    @page{size:landscape}
+  }
+</style>
+</head>
+<body>
+
+<section class="slide on">
+  <h1>Day 3 だけの参加から、独自実装まで</h1>
+  <p class="sub">浦田千颯 ／ speckit-workshop-ui</p>
+
+  <div class="fill" style="display:flex;flex-direction:column;justify-content:center;gap:clamp(20px,2.6vh,40px)">
+    <div class="grid2">
+      <div>
+        <p class="lbl">共通パート</p>
+        <div class="row" style="margin-bottom:12px"><div class="t" style="width:60px;flex:none">Day 1</div><div class="d" style="margin:0">spec.md を読み Figma でデザイン</div></div>
+        <div class="row" style="margin-bottom:12px"><div class="t" style="width:60px;flex:none">Day 2</div><div class="d" style="margin:0">/speckit.tasks → implement で実装</div></div>
+        <div class="row"><div class="t" style="width:60px;flex:none">Day 3</div><div class="d" style="margin:0">Playwright で E2E テスト</div></div>
+      </div>
+      <div class="card">
+        <p class="lbl" style="color:var(--acc)">私の場合</p>
+        <ul>
+          <li>Day 1・2 は不参加</li>
+          <li>day2 ブランチから環境を復元して追いつく</li>
+          <li>Day 3 を完走し、さらに独自機能を追加</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="grid3">
+      <div class="card" style="text-align:center"><div class="big">15/15</div><div class="cap">E2E テスト全パス</div></div>
+      <div class="card" style="text-align:center"><div class="big">9</div><div class="cap">新規テスト件数</div></div>
+      <div class="card" style="text-align:center"><div class="big">2</div><div class="cap">追加した独自機能</div></div>
+    </div>
+  </div>
+  <div class="pg">1 / 3</div>
+</section>
+
+<section class="slide">
+  <h1>独自実装：ダークテーマ ＋ コマンドパレット</h1>
+  <p class="sub">Raycast 型のオーバーレイ。既存レイアウトに手を入れずに機能だけを足す</p>
+
+  <div class="fill" style="display:flex;flex-direction:column;justify-content:center;gap:clamp(20px,2.8vh,40px)">
+    <div class="grid2">
+      <div class="card">
+        <div class="row" style="margin-bottom:12px"><div class="num">1</div><div class="t">ダークテーマ + 切替</div></div>
+        <p class="d" style="margin:0">MUI のテーマを二重定義し、ヘッダーのボタンで切替。選択は localStorage に保存され、リロード後も維持される。既存の言語切替と同じ構造で実装した。</p>
+      </div>
+      <div class="card">
+        <div class="row" style="margin-bottom:12px"><div class="num">2</div><div class="t">コマンドパレット（⌘K）</div></div>
+        <p class="d" style="margin:0">どの画面からでも文書を検索。↑↓ で移動、Enter で詳細、Esc で閉じる。既存の useFiles を流用し、新規 API は追加していない。</p>
+      </div>
+    </div>
+
+    <div>
+      <p class="lbl">なぜ「重ねる」形にしたのか</p>
+      <p style="font-size:clamp(13px,1.2vw,18px)">画面レイアウトを作り替える案もあったが、それだと Day 3 で書いた E2E テストを作り直すことになる。オーバーレイなら既存の DOM 構造が変わらないため、<strong>テスト 12 件を一切触らずに</strong>機能を追加できた。</p>
+      <p style="font-size:clamp(13px,1.2vw,18px);font-weight:700;color:var(--acc);margin-top:12px">→ 結果：既存 12 件 ＋ 新規 3 件 ＝ 15 件すべてパス</p>
+    </div>
+  </div>
+  <div class="pg">2 / 3</div>
+</section>
+
+<section class="slide">
+  <h1>実物を触らないと分からなかったこと</h1>
+  <p class="sub">Playwright MCP で画面を操作して初めて判明。仕様書には書かれていない</p>
+
+  <div class="fill" style="display:flex;flex-direction:column;justify-content:center;gap:clamp(20px,2.6vh,36px)">
+    <div style="display:flex;flex-direction:column;gap:clamp(10px,1.5vh,18px)">
+      <div class="row"><div class="num">1</div><div><div class="t">資料の URL <code>/files</code> は存在せず、実際は <code>/</code> だった</div><div class="d">信じて書いていたら全テストが落ちていた</div></div></div>
+      <div class="row"><div class="num">2</div><div><div class="t">検索に 300ms のデバウンスがあった</div><div class="d">知らずに書くと「時々落ちる」テストになる</div></div></div>
+      <div class="row"><div class="num">3</div><div><div class="t">ソートは client、ページングは server</div><div class="d">並び替えが 1 ページ目にしか効かない、実装上の不整合</div></div></div>
+      <div class="row"><div class="num">4</div><div><div class="t">GET /files を「最近使用したファイル」も叩いていた</div><div class="d">レスポンス待ちでは特定できず、待ち方の設計をやり直した</div></div></div>
+      <div class="row"><div class="num">5</div><div><div class="t">MUI が付ける data-testid は本番ビルドで消える</div><div class="d">ライブラリのソースを読んで判明。自前の目印を追加した</div></div></div>
+    </div>
+
+    <div class="card">
+      <p style="font-size:clamp(14px,1.35vw,21px);font-weight:700;color:var(--acc2)">AI は「調べる・書く・直す」が速い。人は「何を良しとするか」を決める。</p>
+      <p class="d" style="margin-top:8px">テスト範囲を絞る判断、生成物のレビュー、環境問題とコード問題の切り分けは自分の仕事だった。</p>
+    </div>
+  </div>
+  <div class="pg">3 / 3</div>
+</section>
+
+<div class="nav">
+  <button onclick="go(-1)">← 前</button>
+  <button onclick="go(1)">次 →</button>
+</div>
+
+<script>
+  let i = 0;
+  const all = document.querySelectorAll('.slide');
+  function go(d){
+    all[i].classList.remove('on');
+    i = Math.min(all.length - 1, Math.max(0, i + d));
+    all[i].classList.add('on');
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); go(1); }
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(-1); }
+  });
+</script>
+</body>
+</html>
